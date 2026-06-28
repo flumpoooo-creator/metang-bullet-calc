@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>メタングバレット 確率計算機</title>
+<style>
+  :root{
+    --bg:#0f1420; --panel:#1a2233; --panel2:#222d44; --line:#2e3a55;
+    --txt:#e7ecf5; --sub:#9fb0cc; --accent:#4ea1ff; --accent2:#39d39f;
+    --warn:#ffb454; --bad:#ff6b6b; --good:#39d39f;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
+    line-height:1.6;padding:0 0 60px}
+  header{background:linear-gradient(135deg,#1b2a4a,#142036);padding:22px 20px;border-bottom:1px solid var(--line)}
+  h1{margin:0;font-size:20px}
+  header p{margin:6px 0 0;color:var(--sub);font-size:13px}
+  .wrap{max-width:860px;margin:0 auto;padding:0 16px}
+  .tabs{display:flex;gap:8px;margin:18px 0 0;flex-wrap:wrap}
+  .tab{padding:10px 16px;background:var(--panel);border:1px solid var(--line);border-radius:10px 10px 0 0;
+    cursor:pointer;color:var(--sub);font-weight:600;font-size:14px}
+  .tab.active{background:var(--panel2);color:var(--txt);border-bottom-color:var(--panel2)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;margin:14px 0}
+  .card h2{margin:0 0 4px;font-size:16px}
+  .card .desc{color:var(--sub);font-size:13px;margin:0 0 14px}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .row:last-child{border-bottom:none}
+  .row label{font-size:14px}
+  .row .hint{display:block;color:var(--sub);font-size:11px}
+  input[type=number]{width:84px;background:#0d1422;border:1px solid var(--line);color:var(--txt);
+    border-radius:8px;padding:7px 9px;font-size:15px;text-align:right}
+  input[type=number]:focus{outline:none;border-color:var(--accent)}
+  .result{background:var(--panel2);border-radius:10px;padding:14px 16px;margin-top:14px}
+  .big{font-size:34px;font-weight:800;color:var(--accent2);letter-spacing:.5px}
+  .big.small{font-size:24px}
+  .bar{height:10px;background:#0d1422;border-radius:6px;overflow:hidden;margin:6px 0 2px}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
+  th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line)}
+  th:first-child,td:first-child{text-align:left}
+  th{color:var(--sub);font-weight:600}
+  .pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
+  .pill.best{background:rgba(57,211,159,.18);color:var(--good)}
+  .pill.ok{background:rgba(78,161,255,.15);color:var(--accent)}
+  button.run{background:var(--accent);color:#06203f;border:none;border-radius:10px;padding:11px 18px;
+    font-size:15px;font-weight:800;cursor:pointer;margin-top:8px}
+  button.run:active{transform:translateY(1px)}
+  .ref{font-size:12px;color:var(--sub)}
+  .ref b{color:var(--txt)}
+  .muted{color:var(--sub);font-size:12px;margin-top:8px}
+  .pane{display:none}
+  .pane.active{display:block}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:560px){.grid2{grid-template-columns:1fr}}
+  details{margin-top:10px}
+  summary{cursor:pointer;color:var(--accent);font-size:13px}
+  code{background:#0d1422;padding:1px 5px;border-radius:4px;font-size:12px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <h1>⚙️ メタングバレット（メガドリュウズ）確率計算機</h1>
+    <p>メタングのエネ付与確率 / ポケギア3.0のサポート命中率とプレイ順を計算します</p>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="tabs">
+    <div class="tab active" data-pane="metang">① メタング エネ付与</div>
+    <div class="tab" data-pane="pokegear">② ポケギア & プレイ順</div>
+    <div class="tab" data-pane="reset">③ リセット判断</div>
+    <div class="tab" data-pane="ref">カード効果</div>
+  </div>
+
+  <!-- ===================== METANG ===================== -->
+  <div class="pane active" id="metang">
+    <div class="card">
+      <h2>メタング「メタルメーカー」でエネが付く確率</h2>
+      <p class="desc">山札の上から4枚を見て、その中の基本エネルギーを付ける。場のメタング1匹につき1回（=上から 4×匹数 枚を見るのと同じ）。</p>
+
+      <div class="row">
+        <label>山札の残り枚数 <span class="hint">手札・場・サイドを除いた今の山札</span></label>
+        <input type="number" id="m_deck" value="47" min="1" max="60">
+      </div>
+      <div class="row">
+        <label>山札にある基本エネルギーの枚数 <span class="hint">基本鋼エネ17枚デッキの代表値</span></label>
+        <input type="number" id="m_ene" value="14" min="0" max="60">
+      </div>
+      <div class="row">
+        <label>場のメタングの数（メタルメーカーの回数）</label>
+        <input type="number" id="m_metang" value="2" min="1" max="4">
+      </div>
+      <div class="row">
+        <label>付けたいエネの枚数（この枚数以上付く確率）</label>
+        <input type="number" id="m_target" value="1" min="1" max="16">
+      </div>
+
+      <div class="result">
+        <div style="color:var(--sub);font-size:13px">エネを <b id="m_t_lbl">1</b> 枚以上付けられる確率</div>
+        <div class="big" id="m_p">–</div>
+        <div class="bar"><i id="m_bar" style="width:0%"></i></div>
+        <div class="muted">期待値（平均で付くエネ枚数）: <b id="m_exp">–</b> 枚 ／ 1枚も付かない確率: <b id="m_p0">–</b></div>
+      </div>
+
+      <details>
+        <summary>付くエネ枚数ごとの確率（分布）を見る</summary>
+        <table id="m_dist"><thead><tr><th>付くエネ</th><th>ちょうどの確率</th><th>その枚数以上</th></tr></thead><tbody></tbody></table>
+      </details>
+      <p class="muted">計算方法：超幾何分布（厳密値）。複数メタングは上から 4×匹数 枚を見るものとして計算しています。</p>
+    </div>
+  </div>
+
+  <!-- ===================== POKEGEAR ===================== -->
+  <div class="pane" id="pokegear">
+    <div class="card">
+      <h2>ポケギア3.0 で狙ったサポートが当たる確率</h2>
+      <p class="desc">山札の上から7枚を見てサポートを1枚手札に加える。先に他の特性で山札を削ると当たりやすくなります。何から動くのが得かを比較します。</p>
+
+      <div class="grid2">
+        <div class="row"><label>山札の残り枚数</label><input type="number" id="p_deck" value="47" min="1" max="60"></div>
+        <div class="row"><label>狙うサポートの残り枚数<span class="hint">例: ボスの指令 3枚</span></label><input type="number" id="p_sup" value="3" min="0" max="12"></div>
+        <div class="row"><label>山札の基本エネ枚数<span class="hint">メタングが削る対象</span></label><input type="number" id="p_ene" value="14" min="0" max="60"></div>
+        <div class="row"><label>山札の鋼の進化ポケ枚数<span class="hint">ゲノセクトが持ってくる対象</span></label><input type="number" id="p_steel" value="5" min="0" max="20"></div>
+      </div>
+
+      <div class="card" style="background:var(--panel2);margin:14px 0 0">
+        <h2 style="font-size:14px">ポケギアより前に使う特性（オン/オフ）</h2>
+        <p class="desc" style="margin-bottom:8px">使うものにチェック。全パターンの順番を総当たりで比較します。</p>
+        <div class="row"><label><input type="checkbox" id="a_metang" checked> メタング メタルメーカー ×<input type="number" id="a_metang_n" value="2" min="1" max="4" style="width:54px"> <span class="hint">エネを抜いて山札が薄くなる</span></label></div>
+        <div class="row"><label><input type="checkbox" id="a_geno" checked> ゲノセクトex メタルシグナル <span class="hint">鋼進化を2枚抜く＝山札-2</span></label></div>
+        <div class="row"><label><input type="checkbox" id="a_kichi"> キチキギスex さかてにとる <span class="hint">山札を3枚引く（狙いを引く事故あり）</span></label></div>
+      </div>
+
+      <button class="run" id="p_run">プレイ順を計算する</button>
+
+      <div class="result" id="p_resultbox" style="display:none">
+        <div style="color:var(--sub);font-size:13px">最も当たりやすいプレイ順</div>
+        <div class="big small" id="p_best">–</div>
+        <div class="muted" id="p_bestorder"></div>
+        <table id="p_table" style="margin-top:12px">
+          <thead><tr><th>プレイ順</th><th>ポケギア命中率</th><th>最終的に手札にある率</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <p class="muted">「ポケギア命中率」＝ポケギアの7枚で狙いサポートを引ける確率。「手札にある率」＝引き札やポケギアを含め、最終的に1枚以上手札にある確率。<br>モンテカルロ法（<span id="p_trials">40,000</span>回試行）。再計算で多少ぶれます。</p>
+      </div>
+      <p class="muted">基本の考え方：エネや鋼進化を先に抜いて山札を薄くするほどポケギアは当たりやすい。キチキギスは枚数を減らせる反面、狙いサポートを先に引いてしまう事故もあります。</p>
+    </div>
+  </div>
+
+  <!-- ===================== RESET DECISION ===================== -->
+  <div class="pane" id="reset">
+    <div class="card">
+      <h2>メタングで狙いサポートが山下に行った → リセットすべき？</h2>
+      <p class="desc">メタングは見た4枚のうちエネ以外を山下に送るので、狙いサポートが下に埋まるとポケギア（上7枚）で取れません。「埋まったらシャッフルして引き直すべきか」を比較します。<br>※数値は<b>②タブの入力</b>を使います（山札・狙いサポート・基本エネ・鋼進化・メタング数）。</p>
+
+      <button class="run" id="r_run">②の数値でリセット判断を計算</button>
+
+      <div class="result" id="r_box" style="display:none">
+        <div style="color:var(--sub);font-size:13px">メタングが狙いサポートを山下に埋めてしまう確率</div>
+        <div class="big small" id="r_buried">–</div>
+
+        <table style="margin-top:14px">
+          <thead><tr><th>状況</th><th>リセットしない</th><th>リセットする<span class="hint">(シャッフル後にポケギア)</span></th></tr></thead>
+          <tbody>
+            <tr><td><b>埋まった時だけ</b></td><td id="r_b_no">–</td><td id="r_b_yes">–</td></tr>
+            <tr><td>埋まらなかった時</td><td id="r_n_no">–</td><td id="r_n_yes">–</td></tr>
+            <tr><td>全体（平均）</td><td id="r_a_no">–</td><td id="r_a_yes">–</td></tr>
+          </tbody>
+        </table>
+
+        <div class="result" style="background:#16243a;margin-top:14px">
+          <div style="color:var(--sub);font-size:13px">結論</div>
+          <div id="r_verdict" style="font-size:15px;font-weight:700;margin-top:4px">–</div>
+        </div>
+        <p class="muted">モンテカルロ法（60,000回試行）。「埋まった時」は同じ局面でリセットの有無だけを比較しています。</p>
+      </div>
+      <p class="muted">考え方：メタングで見た4枚は<b>自分が把握できる</b>。狙いが山下に埋まったのを確認できたらシャッフルで引き直す価値があり、埋まっていなければそのまま（上にある可能性が高い）が得、というのが一般的な結論です。実際の数値で確認できます。</p>
+    </div>
+  </div>
+
+  <!-- ===================== REFERENCE ===================== -->
+  <div class="pane" id="ref">
+    <div class="card">
+      <h2>組み込んだカード効果（現行レギュ）</h2>
+      <p class="ref"><b>メタング「メタルメーカー」</b>：自分の番に1回。山札を上から4枚見て、その中の基本エネルギーを好きなだけ選び、自分のポケモンにつける。残りは裏にして山札の下にもどす。場のメタングの数だけ使える。</p>
+      <hr style="border-color:var(--line)">
+      <p class="ref"><b>ゲノセクトex「メタルシグナル」</b>：自分の番に1回。山札から鋼タイプの進化ポケモンを2枚まで選び、相手に見せて手札に加える。</p>
+      <hr style="border-color:var(--line)">
+      <p class="ref"><b>キチキギスex「さかてにとる」</b>：前の相手の番に自分のポケモンがきぜつしていたなら、自分の番に1回、山札を3枚引く。</p>
+      <hr style="border-color:var(--line)">
+      <p class="ref"><b>ポケギア3.0（グッズ）</b>：山札を上から7枚見て、その中からサポートを1枚選び、相手に見せて手札に加える。残りは山札にもどして切る。</p>
+      <p class="muted">出典：ポケモンカード公式カード検索 / 各カードデータ。効果テキストは要約です。</p>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---------- combinatorics (log factorial) ----------
+const LF=[0];for(let i=1;i<=400;i++)LF[i]=LF[i-1]+Math.log(i);
+function logC(n,k){if(k<0||k>n||n<0)return -Infinity;return LF[n]-LF[k]-LF[n-k];}
+function C(n,k){if(k<0||k>n||n<0)return 0;return Math.exp(logC(n,k));}
+// hypergeometric: P(exactly k successes) drawing n from N with K successes
+function hyp(N,K,n,k){const v=logC(K,k)+logC(N-K,n-k)-logC(N,n);return Number.isFinite(v)?Math.exp(v):0;}
+
+// ---------- TAB 1: Metang ----------
+function calcMetang(){
+  const N=+v('m_deck'), E=+v('m_ene'), m=+v('m_metang'), t=+v('m_target');
+  const look=Math.min(4*m, N);              // cards seen
+  // distribution of energy among 'look' cards
+  let dist=[], pAtLeast=[], exp=0;
+  const maxk=Math.min(look,E);
+  let cum=0;
+  for(let k=0;k<=maxk;k++){const p=hyp(N,E,look,k);dist[k]=p;exp+=k*p;}
+  // P(>= t)
+  let pge=0;for(let k=Math.max(0,t);k<=maxk;k++)pge+=dist[k];
+  let p0=dist[0]||0;
+  set('m_t_lbl',t);
+  set('m_p',(pge*100).toFixed(1)+'%');
+  document.getElementById('m_bar').style.width=Math.min(100,pge*100)+'%';
+  set('m_exp',exp.toFixed(2));
+  set('m_p0',(p0*100).toFixed(1)+'%');
+  // table
+  const tb=document.querySelector('#m_dist tbody');tb.innerHTML='';
+  let suffix=0;const arr=[];for(let k=0;k<=maxk;k++)arr.push(dist[k]);
+  for(let k=maxk;k>=0;k--){suffix+=dist[k];dist['ge'+k]=suffix;}
+  for(let k=0;k<=maxk;k++){
+    tb.innerHTML+=`<tr><td>${k} 枚</td><td>${(dist[k]*100).toFixed(1)}%</td><td>${(dist['ge'+k]*100).toFixed(1)}%</td></tr>`;
+  }
+}
+
+// ---------- TAB 2: Pokegear + sequencing (Monte Carlo) ----------
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=(Math.random()*(i+1))|0;[a[i],a[j]]=[a[j],a[i]];}}
+function buildDeck(N,S,E,G){
+  const d=[];for(let i=0;i<S;i++)d.push('sup');for(let i=0;i<E;i++)d.push('ene');
+  for(let i=0;i<G;i++)d.push('steel');while(d.length<N)d.push('other');
+  shuffle(d);return d;
+}
+const ACTIONS={
+  metang:(d,st)=>{ // n times: top4 -> remove ene, rest to bottom
+    for(let r=0;r<st.metangN;r++){
+      if(!d.length)break;const look=d.splice(0,4);const rest=[];
+      for(const c of look){if(c==='ene'){/*attached, leaves deck*/}else rest.push(c);}
+      for(const c of rest)d.push(c);
+    }
+  },
+  geno:(d)=>{let rm=0;for(let i=0;i<d.length&&rm<2;){if(d[i]==='steel'){d.splice(i,1);rm++;}else i++;}shuffle(d);},
+  kichi:(d,st)=>{const drawn=d.splice(0,3);for(const c of drawn)if(c==='sup')st.hasTarget=true;},
+  pokegear:(d,st)=>{const look=d.slice(0,7);if(look.includes('sup')){st.pgHit=true;st.hasTarget=true;}}
+};
+function perms(arr){if(arr.length<=1)return [arr];const out=[];arr.forEach((x,i)=>{const rest=arr.slice(0,i).concat(arr.slice(i+1));for(const p of perms(rest))out.push([x,...p]);});return out;}
+const LABEL={metang:'メタング',geno:'ゲノセクト',kichi:'キチキギス',pokegear:'ポケギア'};
+
+function runPokegear(){
+  const N=+v('p_deck'),S=+v('p_sup'),E=+v('p_ene'),G=+v('p_steel');
+  const metangN=+v('a_metang_n');
+  const enabled=['pokegear'];
+  if(chk('a_metang'))enabled.unshift('metang');
+  if(chk('a_geno'))enabled.unshift('geno');
+  if(chk('a_kichi'))enabled.unshift('kichi');
+  const orders=perms(enabled);
+  const TRIALS=40000;
+  const results=orders.map(order=>{
+    let pg=0,have=0;
+    for(let t=0;t<TRIALS;t++){
+      const d=buildDeck(N,S,E,G);
+      const st={pgHit:false,hasTarget:false,metangN};
+      for(const a of order)ACTIONS[a](d,st);
+      if(st.pgHit)pg++;if(st.hasTarget)have++;
+    }
+    return {order,pg:pg/TRIALS,have:have/TRIALS};
+  });
+  results.sort((a,b)=>b.pg-a.pg);
+  // render
+  document.getElementById('p_resultbox').style.display='block';
+  set('p_best',(results[0].pg*100).toFixed(1)+'%');
+  set('p_bestorder','▶ '+results[0].order.map(a=>LABEL[a]).join(' → '));
+  const tb=document.querySelector('#p_table tbody');tb.innerHTML='';
+  results.forEach((r,i)=>{
+    const pill=i===0?'<span class="pill best">最良</span>':(i===results.length-1?'<span class="pill ok">最低</span>':'');
+    tb.innerHTML+=`<tr><td>${r.order.map(a=>LABEL[a]).join(' → ')} ${pill}</td><td>${(r.pg*100).toFixed(1)}%</td><td>${(r.have*100).toFixed(1)}%</td></tr>`;
+  });
+}
+
+// ---------- TAB 3: reset decision after Metang buries the target ----------
+function pgHitCheck(d){return d.slice(0,7).includes('sup');}
+function metangBury(d,metangN){ // returns true if a target supporter got buried to bottom
+  let buried=false;
+  for(let r=0;r<metangN;r++){
+    if(!d.length)break;const look=d.splice(0,4);const rest=[];
+    for(const c of look){if(c==='ene'){}else{rest.push(c);if(c==='sup')buried=true;}}
+    for(const c of rest)d.push(c);
+  }
+  return buried;
+}
+function runReset(){
+  const N=+v('p_deck'),S=+v('p_sup'),E=+v('p_ene'),G=+v('p_steel'),metangN=+v('a_metang_n');
+  const T=60000;
+  let buriedCnt=0;
+  let bNo=0,bYes=0, nNo=0,nYes=0, aNo=0,aYes=0;
+  for(let t=0;t<T;t++){
+    const d=buildDeck(N,S,E,G);
+    const buried=metangBury(d,metangN);
+    const noReset=pgHitCheck(d)?1:0;        // current order (buried sup stays at bottom)
+    const shuffled=d.slice();shuffle(shuffled);
+    const yesReset=pgHitCheck(shuffled)?1:0; // reshuffled
+    aNo+=noReset;aYes+=yesReset;
+    if(buried){buriedCnt++;bNo+=noReset;bYes+=yesReset;}
+    else{nNo+=noReset;nYes+=yesReset;}
+  }
+  const nb=T-buriedCnt;
+  const pct=x=>(x*100).toFixed(1)+'%';
+  document.getElementById('r_box').style.display='block';
+  set('r_buried',pct(buriedCnt/T));
+  set('r_b_no', buriedCnt?pct(bNo/buriedCnt):'—');
+  set('r_b_yes',buriedCnt?pct(bYes/buriedCnt):'—');
+  set('r_n_no', nb?pct(nNo/nb):'—');
+  set('r_n_yes',nb?pct(nYes/nb):'—');
+  set('r_a_no', pct(aNo/T));
+  set('r_a_yes',pct(aYes/T));
+  // verdict
+  const gainBuried=buriedCnt?(bYes-bNo)/buriedCnt:0;     // reset benefit when buried
+  const gainNot=nb?(nYes-nNo)/nb:0;                      // reset benefit when NOT buried
+  let txt='';
+  if(buriedCnt===0){txt='狙いサポートが0枚、または埋まらない設定です。リセット判断の対象局面が発生しません。';}
+  else{
+    const bPlus=(gainBuried*100).toFixed(1), nPlus=(gainNot*100).toFixed(1);
+    txt=`埋まった時はリセットで命中率が約 ${bPlus>0?'+':''}${bPlus}pt 変化、埋まっていない時は約 ${nPlus>0?'+':''}${nPlus}pt 変化します。`;
+    if(gainBuried>0.01 && gainNot<=0.005)
+      txt+=' → 結論：メタングで狙いが山下に埋まったのを確認できたらリセット、埋まっていなければそのままが最適です。';
+    else if(gainBuried>0.01)
+      txt+=' → 結論：埋まった時はリセット推奨。埋まっていない時も状況次第なので数値を見て判断を。';
+    else
+      txt+=' → このデッキ構成ではリセットの効果は小さめ。山札が短く下まで届く場合は差が出にくいです。';
+  }
+  set('r_verdict',txt);
+}
+
+// ---------- helpers / wiring ----------
+function v(id){return document.getElementById(id).value;}
+function chk(id){return document.getElementById(id).checked;}
+function set(id,t){document.getElementById(id).textContent=t;}
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('.pane').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');document.getElementById(t.dataset.pane).classList.add('active');
+});
+['m_deck','m_ene','m_metang','m_target'].forEach(id=>document.getElementById(id).addEventListener('input',calcMetang));
+document.getElementById('p_run').onclick=runPokegear;
+document.getElementById('r_run').onclick=runReset;
+calcMetang();
+</script>
+</body>
+</html>
