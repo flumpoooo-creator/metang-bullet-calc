@@ -87,7 +87,34 @@
   .pane{display:none}
   .pane.active{display:block}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  @media(max-width:560px){.grid2{grid-template-columns:1fr}}
+  @media(max-width:560px){
+    .grid2{grid-template-columns:1fr}
+    body{padding:0 0 48px}
+    header{padding:18px 14px}
+    h1{font-size:17px;letter-spacing:.3px}
+    header p{font-size:12px}
+    .wrap{padding:0 10px}
+    .tabs{gap:6px;margin-top:14px}
+    .tab{padding:8px 11px;font-size:12.5px;border-radius:9px 9px 0 0}
+    .card{padding:14px}
+    .card h2{font-size:15px}
+    .card .desc{font-size:12.5px}
+    .intro{padding:11px 12px}
+    .pb-h{font-size:14px}
+    .result{padding:12px 13px}
+    .big{font-size:28px}
+    .big.small{font-size:20px}
+    /* iOSのフォーカス時ズーム防止に font-size:16px */
+    input[type=number],select{font-size:16px}
+    input[type=number]{width:72px;padding:8px 8px}
+    .row{padding:9px 0;gap:8px}
+    .row label{font-size:13px;flex:1 1 auto;min-width:0}
+    .row .hint{font-size:10.5px}
+    table{font-size:12px}
+    th,td{padding:6px 4px}
+    button.run{width:100%;padding:13px 16px;font-size:16px}
+    .ref{font-size:12.5px;line-height:1.7}
+  }
   details{margin-top:10px}
   summary{cursor:pointer;color:var(--accent);font-size:13px}
   code{background:#191d23;padding:1px 5px;border-radius:4px;font-size:12px}
@@ -203,7 +230,7 @@
         <div class="pb-h">できること</div>
         <p class="ref" style="margin:0">狙いのサポートがメタングで山下に行った時、<b>ゲノセクトで山札を混ぜて引き直す</b>のと<b>そのまま上7枚を見る</b>の、どちらがポケギアで当たりやすいかを比較します。混ぜると山下の札も拾える代わりに、上にあった札の位置は崩れます。</p>
         <div class="pb-h">具体例</div>
-        <p class="ref" style="margin:0">山札20枚・狙い2枚のうち1枚が山下・残り1枚は上12枚以内のとき、混ぜる？そのまま？ → 下で計算。</p>
+        <p class="ref" style="margin:0">山札20枚・狙い2枚のうち1枚が山下・もう1枚は上12枚以内のとき、混ぜる？そのまま？ → 下で計算。</p>
       </div>
       <p class="pb-h">数値を打ち込む <span class="hint" style="font-weight:400">※この値は③タブだけで使います（②④とは独立）</span></p>
 
@@ -211,7 +238,7 @@
       <div class="row"><label>山札の鋼の進化ポケ枚数 <span class="hint">ゲノセクトが抜く＝混ぜる時に山札-2</span></label><input type="number" id="r_steel" value="2" min="0" max="20"></div>
       <div class="row"><label>狙うサポートの山札内の総枚数</label><input type="number" id="r_sup" value="2" min="1" max="6"></div>
       <div class="row"><label>そのうち山下に埋まった枚数 <span class="hint">メタングで山下へ送った枚数</span></label><input type="number" id="r_buried" value="1" min="0" max="6"></div>
-      <div class="row"><label>残り1枚は上から何枚以内にある？ <span class="hint">上の方にあると分かっているなら入力（例:上7枚なら7、上12枚なら12）。分からなければ山札全体の枚数のまま＝位置不明</span></label><input type="number" id="r_topk" value="12" min="1" max="60"></div>
+      <div class="row"><label>もう1枚（埋まっていない狙い）は上から何枚以内？ <span class="hint">上の方にあると分かっているなら入力（例:上7枚なら7、上12枚なら12）。分からなければ山札全体の枚数のまま＝位置不明</span></label><input type="number" id="r_topk" value="12" min="1" max="60"></div>
       <div class="row"><label>山札の基本エネ枚数 <span class="hint">下の「最適順」パネル用</span></label><input type="number" id="r_ene" value="7" min="0" max="60"></div>
 
       <button class="run" id="r_run">リセット判断を計算</button>
@@ -233,9 +260,9 @@
       </div>
       <div class="result" style="background:linear-gradient(160deg,#26302c,#1f2724);border:1px solid #4a6b5c;margin-top:16px">
         <div class="pb-h" style="margin-top:0">定石（リセット判断）</div>
-        <p class="ref" style="margin:0">・残りコピーの位置が<b>分からない／まだ深い</b> → <b>ゲノセクトで混ぜる方が大きく得</b>（埋もれた札を掘り起こし＋鋼2枚で山札も薄くなる）。<br>・残りが<b>上の方だが上7枚かは不確か</b>（例:上12枚） → <b>それでも混ぜる方がやや得</b>。効くのは主に鋼2枚の圧縮。<br>・残りが<b>確実に上7枚にある</b> → <b>混ぜない</b>（確実な命中を捨てる損）。<br>・狙いが<b>全部山下</b> → 必ず混ぜる。</p>
+        <p class="ref" style="margin:0">・埋まっていない方の狙い（もう1枚）の位置が<b>分からない／まだ深い</b> → <b>ゲノセクトで混ぜる方が大きく得</b>（埋もれた札を掘り起こし＋鋼2枚で山札も薄くなる）。<br>・その1枚が<b>上の方だが上7枚かは不確か</b>（例:上12枚） → <b>それでも混ぜる方がやや得</b>。効くのは主に鋼2枚の圧縮。<br>・その1枚が<b>確実に上7枚にある</b> → <b>混ぜない</b>（確実な命中を捨てる損）。<br>・狙いが<b>全部山下</b> → 必ず混ぜる。</p>
       </div>
-      <p class="muted">効くのは「シャッフル」より「鋼2枚の圧縮」のことが多い。残りコピーが深い時はシャッフルの掘り起こしも効くが、上の方にある時はシャッフル単体ではほぼ互角で、山札を薄くする効果が主。鋼進化を抜けない（シャッフルだけになる）時は無理に混ぜなくてよい。</p>
+      <p class="muted">効くのは「シャッフル」より「鋼2枚の圧縮」のことが多い。埋まっていない方の狙いが深い時はシャッフルの掘り起こしも効くが、上の方にある時はシャッフル単体ではほぼ互角で、山札を薄くする効果が主。鋼進化を抜けない（シャッフルだけになる）時は無理に混ぜなくてよい。</p>
     </div>
 
     <div class="card">
@@ -403,7 +430,7 @@ function runPokegear(){
 
 // ---------- TAB 3: メタング使用中に山下へ行った狙いをゲノセクトでリセットするか ----------
 function pgHitCheck(d){return d.slice(0,7).includes('sup');}
-// 状態を構築: 埋まった枚数は山下、残りコピーは「上から topK 枚以内」に一様配置
+// 状態を構築: 埋まった枚数は山下、もう1枚の狙いは「上から topK 枚以内」に一様配置
 // topK = 山札枚数 のとき＝位置不明（山全体に一様）
 function buildState(N,S,E,G,buried,topK){
   const filler=[];
@@ -425,7 +452,7 @@ function buildState(N,S,E,G,buried,topK){
 function runReset(){
   const N=+v('r_deck'),E=+v('r_ene'),G=+v('r_steel'); // ③独立: 自前の入力を使う
   const S=+v('r_sup'); let buried=+v('r_buried'); if(buried>S)buried=S;
-  const topK=Math.min(+v('r_topk'), N); // 残りコピーが上から何枚以内か（N＝位置不明）
+  const topK=Math.min(+v('r_topk'), N); // もう1枚の狙いが上から何枚以内か（N＝位置不明）
   const T=120000;
   let no=0,yes=0,pure=0;
   for(let t=0;t<T;t++){
