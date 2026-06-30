@@ -228,6 +228,23 @@
       </div>
       <p class="muted">埋まった1枚は山下で死に札。残り1枚の位置が分からないなら、1枚だけが上7枚に来る確率は意外と低いので、混ぜて全コピーに山札全体からチャンスを与えた方が当たりやすくなります。</p>
     </div>
+
+    <div class="card">
+      <h2>メタングAでボスが山下に行った後：B・C・キチキギス・ゲノセクト・ポケギアの最適順</h2>
+      <p class="desc">メタングAの「メタルメーカー」で狙いサポート1枚が山下に行った状態から、残りの動き（メタング×2＝B/C・キチキギス・ゲノセクト・ポケギア）の順番を総当たりで比較し、最終的に狙いを手札に持てる確率が高い順に並べます。山札・狙い・基本エネ・鋼進化は<b>②の数値</b>を使用。</p>
+      <button class="run" id="rs_run">最適な順番を計算</button>
+      <div id="rs_box" style="display:none;margin-top:12px">
+        <table>
+          <thead><tr><th>プレイ順</th><th>狙いを手札に持てる率</th></tr></thead>
+          <tbody id="rs_tbody"></tbody>
+        </table>
+        <div class="result" style="background:linear-gradient(160deg,#26302c,#1f2724);border:1px solid #4a6b5c;margin-top:12px">
+          <div style="color:var(--sub);font-size:13px">まとめ</div>
+          <div id="rs_verdict" style="font-size:14px;font-weight:700;margin-top:4px;line-height:1.7"></div>
+        </div>
+        <p class="muted">「手札に持てる率」＝ポケギアやキチキギスの引きで、最終的に狙いサポートが手札に1枚以上ある確率。メタングB/Cは同じ効果なので入れ替えても結果は同じです。</p>
+      </div>
+    </div>
   </div>
 
   <!-- ===================== REFERENCE ===================== -->
@@ -392,6 +409,47 @@ function runReset(){
   set('r_verdict',txt);
 }
 
+// ---------- TAB 3 (追加): メタングAでボスが山下→残りの最適順 ----------
+function runSeqAfterBury(){
+  const N=+v('p_deck'),S=+v('p_sup'),E=+v('p_ene'),G=+v('p_steel');
+  const T=5000;
+  const APPLY={
+    'メタング':(d,st)=>applyMetangN(d,1),       // メタルメーカー(上4枚→エネ抜き、残り山下)
+    'キチキギス':(d,st)=>ACTIONS.kichi(d,st),   // 山札3枚引く
+    'ゲノセクト':(d,st)=>ACTIONS.geno(d),        // 鋼2枚抜く+山札を切る
+    'ポケギア':(d,st)=>ACTIONS.pokegear(d,st),  // 上7枚からサポート
+  };
+  // メタングB/Cは同効果なので重複順列を除去
+  const items=['メタング','メタング','キチキギス','ゲノセクト','ポケギア'];
+  const seen=new Set(), orders=[];
+  for(const p of perms(items)){const k=p.join('>');if(!seen.has(k)){seen.add(k);orders.push(p);}}
+  const res=orders.map(order=>{
+    let have=0;
+    for(let t=0;t<T;t++){
+      const d=buildState(N,S,E,G,1,'uniform'); // メタングAでボス1枚が山下、残りは山上(位置不明)
+      const st={hasTarget:false,pgHit:false,metangN:1};
+      for(const a of order)APPLY[a](d,st);
+      if(st.hasTarget)have++;
+    }
+    return {order,have:have/T};
+  });
+  res.sort((a,b)=>b.have-a.have);
+  const pct=x=>(x*100).toFixed(1)+'%';
+  const tb=document.getElementById('rs_tbody');tb.innerHTML='';
+  const show=res.slice(0,6).concat([res[res.length-1]]);
+  show.forEach((r,i)=>{
+    const isBest=(r===res[0]), isWorst=(r===res[res.length-1]);
+    const pill=isBest?' <span class="pill best">最良</span>':(isWorst?' <span class="pill ok">最低</span>':'');
+    tb.innerHTML+=`<tr><td>${r.order.join(' → ')}${pill}</td><td>${pct(r.have)}</td></tr>`;
+  });
+  document.getElementById('rs_box').style.display='block';
+  document.getElementById('rs_verdict').innerHTML =
+    `最良の順番：<b>${res[0].order.join(' → ')}</b>（保有 ${pct(res[0].have)}）。<br>`+
+    '・<b>ポケギアは最後</b>。ゲノセクトのシャッフルより前にポケギアを撃つと、埋もれたボスは取れない（最低順はだいたいポケギア先行）。<br>'+
+    '・山下のボスを戻せるのは<b>ゲノセクトの「山札を切る（シャッフル）」だけ</b>。ポケギアより前に必ず使う。<br>'+
+    '・<b>メタング（B/C）はエネを抜いて山札を薄くする</b>ので、回収率もむしろ上がる。先に使ってOK（だから最良順は「メタング→ゲノセクト→…→ポケギア」になりやすい）。';
+}
+
 // ---------- TAB 2 (追加): ゲノセクト vs キチキギス 優先判定 (3ケース) ----------
 function applyMetangN(d,m){ // m回メタング。狙いが山下に埋まったら true
   let buried=false;
@@ -466,6 +524,7 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
 document.getElementById('p_run').onclick=runPokegear;
 document.getElementById('pr_run').onclick=runPriority;
 document.getElementById('r_run').onclick=runReset;
+document.getElementById('rs_run').onclick=runSeqAfterBury;
 calcMetang();
 </script>
 </body>
