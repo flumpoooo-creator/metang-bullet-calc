@@ -160,9 +160,9 @@
       <h2>② ポケギア & プレイ順</h2>
       <div class="intro">
         <div class="pb-h">できること</div>
-        <p class="ref" style="margin:0">ポケギア3.0（山札の上7枚からサポートを1枚回収）で<b>狙いのサポートが当たる確率</b>と、引き札・特性を<b>何から使うのが得か（プレイ順）</b>を総当たりで比較します。先に山札を薄くするほど当たりやすくなります。</p>
+        <p class="ref" style="margin:0">ポケギア3.0（山札の上7枚からサポートを1枚回収）で<b>狙いのサポートが当たる確率</b>と、<b>リセットしない前提</b>で一番効率の良いプレイ順（メタング・キチキギス）を総当たりで比較します。混ぜる（ゲノセクト）かどうかの判断は③タブです。</p>
         <div class="pb-h">具体例</div>
-        <p class="ref" style="margin:0">山札34枚・ボスの指令2枚のとき、メタング・ゲノセクト・キチキギスを何から使えば一番当たる？ → 下で計算。</p>
+        <p class="ref" style="margin:0">山札34枚・ボスの指令2枚のとき、メタングとキチキギスを何から使えば一番当たる？ → 下で計算。</p>
       </div>
       <p class="pb-h">数値を打ち込む <span class="hint" style="font-weight:400">※この値は②タブだけで使います（③④とは独立）</span></p>
 
@@ -170,14 +170,12 @@
         <div class="row"><label>山札の残り枚数<span class="hint">序盤の現実的な目安は34</span></label><input type="number" id="p_deck" value="34" min="1" max="60"></div>
         <div class="row"><label>狙うサポートの残り枚数<span class="hint">例: ボスの指令 2枚</span></label><input type="number" id="p_sup" value="2" min="0" max="12"></div>
         <div class="row"><label>山札の基本エネ枚数<span class="hint">メタングが削る対象</span></label><input type="number" id="p_ene" value="13" min="0" max="60"></div>
-        <div class="row"><label>山札の鋼の進化ポケ枚数<span class="hint">ゲノセクトが持ってくる対象</span></label><input type="number" id="p_steel" value="2" min="0" max="20"></div>
       </div>
 
       <div class="card" style="background:var(--panel2);margin:14px 0 0">
         <h2 style="font-size:14px">ポケギアより前に使う特性（オン/オフ）</h2>
-        <p class="desc" style="margin-bottom:8px">使うものにチェック。全パターンの順番を総当たりで比較します。</p>
+        <p class="desc" style="margin-bottom:8px">使うものにチェック。全パターンの順番を総当たりで比較します。<b>リセットしない前提</b>なのでゲノセクトは入っていません。</p>
         <div class="row"><label><input type="checkbox" id="a_metang" checked> メタング メタルメーカー ×<input type="number" id="a_metang_n" value="3" min="1" max="4" style="width:54px"> <span class="hint">エネを抜いて山札が薄くなる</span></label></div>
-        <div class="row"><label><input type="checkbox" id="a_geno" checked> ゲノセクトex メタルシグナル <span class="hint">鋼進化を2枚抜く＝山札-2</span></label></div>
         <div class="row"><label><input type="checkbox" id="a_kichi"> キチキギスex さかてにとる <span class="hint">山札を3枚引く（狙いを引く事故あり）</span></label></div>
       </div>
 
@@ -193,24 +191,7 @@
         </table>
         <p class="muted">「ポケギア命中率」＝ポケギアの7枚で狙いサポートを引ける確率。「手札にある率」＝引き札やポケギアを含め、最終的に1枚以上手札にある確率。<br>再計算で数字が多少ぶれます。</p>
       </div>
-      <p class="muted">基本の考え方：エネや鋼進化を先に抜いて山札を薄くするほどポケギアは当たりやすい。キチキギスは枚数を減らせる反面、狙いサポートを先に引いてしまう事故もあります。</p>
-
-      <div class="card" style="background:var(--panel2);margin:18px 0 0">
-        <h2 style="font-size:15px">ゲノセクト vs キチキギス：どちらを先に使う？（3ケース判定）</h2>
-        <p class="desc">山札の状態ごとに「ゲノセクト先」と「キチキギス先」を比べます。ゲノセクトは山札を切る（混ぜる）ので、メタングで作った良い並びがある時は裏目になりがちです。②の数値とメタング数を使用。</p>
-        <button class="run" id="pr_run">3ケースで優先判定を計算</button>
-        <div id="pr_box" style="display:none;margin-top:12px">
-          <table>
-            <thead><tr><th>山札の状態</th><th>ゲノセクト先<span class="hint">命中 / 保有</span></th><th>キチキギス先<span class="hint">命中 / 保有</span></th><th>狙い当てに有利</th></tr></thead>
-            <tbody id="pr_tbody"></tbody>
-          </table>
-          <div class="result" style="background:linear-gradient(160deg,#2c333d,#23282f);margin-top:12px">
-            <div style="color:var(--sub);font-size:13px">まとめ</div>
-            <div id="pr_verdict" style="font-size:14px;font-weight:700;margin-top:4px;line-height:1.7"></div>
-          </div>
-          <p class="muted">「命中」＝ポケギアの上7枚で狙いを当てる確率。「保有」＝引き札やポケギアを含め、最終的に手札に1枚以上ある確率。<br>各ケースとも、その特性のあとにポケギアを使った場合。</p>
-        </div>
-      </div>
+      <p class="muted">基本の考え方：エネを先に抜いて山札を薄くするほどポケギアは当たりやすい。キチキギスは枚数を減らせる反面、狙いサポートを先に引いてしまう事故もあります。<br>※ゲノセクト＝山札を切る（リセット）なので、ここでは使いません。混ぜる/混ぜないの判断は③タブで。</p>
     </div>
   </div>
 
@@ -391,11 +372,10 @@ function perms(arr){if(arr.length<=1)return [arr];const out=[];arr.forEach((x,i)
 const LABEL={metang:'メタング',geno:'ゲノセクト',kichi:'キチキギス',pokegear:'ポケギア'};
 
 function runPokegear(){
-  const N=+v('p_deck'),S=+v('p_sup'),E=+v('p_ene'),G=+v('p_steel');
+  const N=+v('p_deck'),S=+v('p_sup'),E=+v('p_ene'),G=0; // ②はリセットしない前提（ゲノセクト無し）
   const metangN=+v('a_metang_n');
   const enabled=['pokegear'];
   if(chk('a_metang'))enabled.unshift('metang');
-  if(chk('a_geno'))enabled.unshift('geno');
   if(chk('a_kichi'))enabled.unshift('kichi');
   const orders=perms(enabled);
   const TRIALS=40000;
@@ -517,7 +497,7 @@ function runSeqAfterBury(){
     '・<b>メタング（B/C）はエネを抜いて山札を薄くする</b>ので、回収率もむしろ上がる。先に使ってOK（だから最良順は「メタング→ゲノセクト→…→ポケギア」になりやすい）。';
 }
 
-// ---------- TAB 2 (追加): ゲノセクト vs キチキギス 優先判定 (3ケース) ----------
+// ---------- ヘルパー: applyMetangN（③の最適順で使用） ----------
 function applyMetangN(d,m){ // m回メタング。狙いが山下に埋まったら true
   let buried=false;
   for(let r=0;r<m;r++){
@@ -526,56 +506,6 @@ function applyMetangN(d,m){ // m回メタング。狙いが山下に埋まった
     for(const c of rest)d.push(c);
   }
   return buried;
-}
-function lineResult(d,first){ // first: 'geno' | 'kichi' → そのあとポケギア
-  const st={pgHit:false,hasTarget:false,metangN:1};
-  ACTIONS[first](d,st);
-  ACTIONS.pokegear(d,st);
-  return {pg:st.pgHit?1:0,have:st.hasTarget?1:0};
-}
-function runPriority(){
-  const N=+v('p_deck'),S=+v('p_sup'),E=+v('p_ene'),G=+v('p_steel'),metangN=+v('a_metang_n');
-  const T=60000;
-  const spec={deck:N,sup:S,energy:E,steel:G};
-  // 集計箱
-  const acc={random:z(),notburied:z(),buried:z()};
-  function z(){return {n:0,gPg:0,gHave:0,kPg:0,kHave:0};}
-  function add(box,g,k){box.n++;box.gPg+=g.pg;box.gHave+=g.have;box.kPg+=k.pg;box.kHave+=k.have;}
-  // メタング未使用（山札ランダム）
-  for(let t=0;t<T;t++){
-    const d=buildDeck(N,S,E,G);
-    add(acc.random, lineResult(d.slice(),'geno'), lineResult(d.slice(),'kichi'));
-  }
-  // メタング使用 → 埋まった/埋まらないで振り分け
-  for(let t=0;t<T;t++){
-    const base=buildDeck(N,S,E,G);
-    const buried=applyMetangN(base,metangN);
-    const box=buried?acc.buried:acc.notburied;
-    add(box, lineResult(base.slice(),'geno'), lineResult(base.slice(),'kichi'));
-  }
-  // 描画
-  const pct=x=>(x*100).toFixed(1)+'%';
-  const rows=[
-    ['メタング未使用（山札ランダム）',acc.random],
-    ['メタング後・狙いが埋まっていない',acc.notburied],
-    ['メタング後・狙いが埋まった',acc.buried],
-  ];
-  const tb=document.getElementById('pr_tbody');tb.innerHTML='';
-  for(const [label,b] of rows){
-    if(b.n===0){tb.innerHTML+=`<tr><td>${label}</td><td colspan="3" style="color:var(--sub)">該当なし</td></tr>`;continue;}
-    const gPg=b.gPg/b.n,gHave=b.gHave/b.n,kPg=b.kPg/b.n,kHave=b.kHave/b.n;
-    const diff=gPg-kPg;
-    let rec;
-    if(Math.abs(diff)<0.005)rec='<span class="pill ok">ほぼ互角</span>';
-    else if(diff>0)rec='<span class="pill best">ゲノセクト先</span>';
-    else rec='<span class="pill best">キチキギス先</span>';
-    tb.innerHTML+=`<tr><td>${label}</td><td>${pct(gPg)} / ${pct(gHave)}</td><td>${pct(kPg)} / ${pct(kHave)}</td><td>${rec}</td></tr>`;
-  }
-  document.getElementById('pr_box').style.display='block';
-  document.getElementById('pr_verdict').innerHTML =
-    '・山札に守るべき並びが無い時（メタング未使用 や 狙いが埋まった時）は、狙いを巻き込まない<b>ゲノセクトの2枚圧縮を優先</b>すると当てやすい。<br>'+
-    '・メタングで狙いを上に乗せられている時は、シャッフルが裏目になるので<b>キチキギス優先</b>（順番を保ったまま掘れる）。<br>'+
-    '・「手札に持つ」だけならキチキギスの引きが常に有利。両方使えるなら基本は両方使うのが最大。';
 }
 
 // ---------- TAB 4: ジャッジマン前にメタルメーカー？（厳密な期待値） ----------
@@ -615,7 +545,6 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
 ['m_deck','m_ene','m_metang','m_target'].forEach(id=>document.getElementById(id).addEventListener('input',calcMetang));
 ['jd_deck','jd_dene','jd_hand','jd_hene','jd_metang'].forEach(id=>document.getElementById(id).addEventListener('input',calcJudge));
 document.getElementById('p_run').onclick=runPokegear;
-document.getElementById('pr_run').onclick=runPriority;
 document.getElementById('r_run').onclick=runReset;
 document.getElementById('rs_run').onclick=runSeqAfterBury;
 calcMetang();
