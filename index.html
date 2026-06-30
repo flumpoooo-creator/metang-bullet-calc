@@ -153,8 +153,8 @@
   <!-- ===================== RESET DECISION ===================== -->
   <div class="pane" id="reset">
     <div class="card">
-      <h2>メタングで狙いサポートが山下に行った → リセットすべき？</h2>
-      <p class="desc">メタングは見た4枚のうちエネ以外を山下に送るので、狙いサポートが下に埋まるとポケギア（上7枚）で取れません。「埋まったらシャッフルして引き直すべきか」を比較します。<br>※数値は<b>②タブの入力</b>を使います（山札・狙いサポート・基本エネ・鋼進化・メタング数）。</p>
+      <h2>メタングで狙いが山下に埋まった → ゲノセクトでリセットすべき？</h2>
+      <p class="desc">メタングは見た4枚のうちエネ以外を山下に送るので、狙いサポートが下に埋まるとポケギア（上7枚）で取れません。ゲノセクトの特性は<b>鋼進化を2枚抜く＋山札を切る（シャッフル）</b>ので、これでリセットして引き直せます。良くも悪くも山札が混ざるので、使うべきかを比較します。<br>※数値は<b>②タブの入力</b>を使います（山札・狙いサポート・基本エネ・鋼進化・メタング数）。</p>
 
       <button class="run" id="r_run">②の数値でリセット判断を計算</button>
 
@@ -163,7 +163,7 @@
         <div class="big small" id="r_buried">–</div>
 
         <table style="margin-top:14px">
-          <thead><tr><th>状況</th><th>リセットしない</th><th>リセットする<span class="hint">(シャッフル後にポケギア)</span></th></tr></thead>
+          <thead><tr><th>状況</th><th>ゲノセクト無し</th><th>ゲノセクトでリセット<span class="hint">(鋼2枚抜く+山札を切る)</span></th></tr></thead>
           <tbody>
             <tr><td><b>埋まった時だけ</b></td><td id="r_b_no">–</td><td id="r_b_yes">–</td></tr>
             <tr><td>埋まらなかった時</td><td id="r_n_no">–</td><td id="r_n_yes">–</td></tr>
@@ -175,9 +175,9 @@
           <div style="color:var(--sub);font-size:13px">結論</div>
           <div id="r_verdict" style="font-size:15px;font-weight:700;margin-top:4px">–</div>
         </div>
-        <p class="muted">モンテカルロ法（60,000回試行）。「埋まった時」は同じ局面でリセットの有無だけを比較しています。</p>
+        <p class="muted">モンテカルロ法（60,000回試行）。「埋まった時」は同じ局面で、ゲノセクト（鋼2枚抜く+山札を切る）を使う/使わないだけを比較しています。</p>
       </div>
-      <p class="muted">考え方：メタングで見た4枚は<b>自分が把握できる</b>。狙いが山下に埋まったのを確認できたらシャッフルで引き直す価値があり、埋まっていなければそのまま（上にある可能性が高い）が得、というのが一般的な結論です。実際の数値で確認できます。</p>
+      <p class="muted">考え方：メタング1回目で見た4枚は<b>自分が把握できる</b>。狙いが山下に埋まったのを確認できたらゲノセクトでリセットして引き直す価値が高い。埋まっていなければ、ゲノセクトは山札を薄くする利点と狙いを混ぜる欠点の両面（良くも悪くも）になるので、数値で確認しましょう。</p>
     </div>
   </div>
 
@@ -303,9 +303,9 @@ function runReset(){
   for(let t=0;t<T;t++){
     const d=buildDeck(N,S,E,G);
     const buried=metangBury(d,metangN);
-    const noReset=pgHitCheck(d)?1:0;        // current order (buried sup stays at bottom)
-    const shuffled=d.slice();shuffle(shuffled);
-    const yesReset=pgHitCheck(shuffled)?1:0; // reshuffled
+    const noReset=pgHitCheck(d)?1:0;        // ゲノセクト無し: 埋まった狙いは山下のまま
+    const reset=d.slice();ACTIONS.geno(reset); // ゲノセクト メタルシグナル: 鋼進化2枚抜く+山札を切る
+    const yesReset=pgHitCheck(reset)?1:0;
     aNo+=noReset;aYes+=yesReset;
     if(buried){buriedCnt++;bNo+=noReset;bYes+=yesReset;}
     else{nNo+=noReset;nYes+=yesReset;}
@@ -327,11 +327,11 @@ function runReset(){
   if(buriedCnt===0){txt='狙いサポートが0枚、または埋まらない設定です。リセット判断の対象局面が発生しません。';}
   else{
     const bPlus=(gainBuried*100).toFixed(1), nPlus=(gainNot*100).toFixed(1);
-    txt=`埋まった時はリセットで命中率が約 ${bPlus>0?'+':''}${bPlus}pt 変化、埋まっていない時は約 ${nPlus>0?'+':''}${nPlus}pt 変化します。`;
+    txt=`埋まった時はゲノセクトでリセットすると命中率が約 ${bPlus>0?'+':''}${bPlus}pt、埋まっていない時は約 ${nPlus>0?'+':''}${nPlus}pt 変化します。`;
     if(gainBuried>0.01 && gainNot<=0.005)
-      txt+=' → 結論：メタングで狙いが山下に埋まったのを確認できたらリセット、埋まっていなければそのままが最適です。';
+      txt+=' → 結論：メタング1回目で狙いが山下に埋まったのを確認できたらゲノセクトでリセット、埋まっていなければそのままポケギアが最適です。';
     else if(gainBuried>0.01)
-      txt+=' → 結論：埋まった時はリセット推奨。埋まっていない時も状況次第なので数値を見て判断を。';
+      txt+=' → 結論：埋まった時はゲノセクトでリセット推奨。埋まっていない時もゲノセクトは山札を薄くするので基本は得です（数値を確認）。';
     else
       txt+=' → このデッキ構成ではリセットの効果は小さめ。山札が短く下まで届く場合は差が出にくいです。';
   }
