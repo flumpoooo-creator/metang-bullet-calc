@@ -99,15 +99,15 @@
 
 <div class="wrap">
   <div class="tabs">
-    <div class="tab active" data-pane="metang">① メタング エネ加速</div>
+    <div class="tab active" data-pane="purpose">目的</div>
+    <div class="tab" data-pane="metang">① メタング エネ加速</div>
     <div class="tab" data-pane="pokegear">② ポケギア & プレイ順</div>
     <div class="tab" data-pane="reset">③ リセット判断</div>
     <div class="tab" data-pane="judge">④ ジャッジマン</div>
-    <div class="tab" data-pane="purpose">目的</div>
   </div>
 
   <!-- ===================== METANG ===================== -->
-  <div class="pane active" id="metang">
+  <div class="pane" id="metang">
     <div class="card">
       <h2>メタング「メタルメーカー」でエネ加速できる確率</h2>
       <p class="desc">山札の上から4枚を見て、その中の基本鋼エネルギーを加速（自分のポケモンにつける）。場のメタング1匹につき1回（=上から 4×匹数 枚を見るのと同じ）。</p>
@@ -206,6 +206,7 @@
 
       <div class="row"><label>狙うサポートの山札内の総枚数</label><input type="number" id="r_sup" value="2" min="1" max="6"></div>
       <div class="row"><label>そのうち山下に埋まった枚数 <span class="hint">メタングで山下へ送った枚数</span></label><input type="number" id="r_buried" value="1" min="0" max="6"></div>
+      <div class="row"><label>残りコピーが上から何枚以内にあるか <span class="hint">分かるなら入力（例:上12枚なら12）。不明なら山札の残り枚数のまま</span></label><input type="number" id="r_topk" value="34" min="1" max="60"></div>
 
       <button class="run" id="r_run">リセット判断を計算</button>
 
@@ -213,8 +214,9 @@
         <table>
           <thead><tr><th>プレイ</th><th>ポケギア命中率</th></tr></thead>
           <tbody>
-            <tr><td>そのままポケギア（ゲノセクト無し）</td><td id="r_no">–</td></tr>
-            <tr><td>ゲノセクトでリセット → ポケギア</td><td id="r_yes">–</td></tr>
+            <tr><td>そのままポケギア（混ぜない）</td><td id="r_no">–</td></tr>
+            <tr><td>ゲノセクトで混ぜる（鋼2枚抜き＋シャッフル）</td><td id="r_yes">–</td></tr>
+            <tr><td>（参考）シャッフルのみ・圧縮なし</td><td id="r_pure">–</td></tr>
           </tbody>
         </table>
         <div class="result" style="background:linear-gradient(160deg,#2c333d,#23282f);margin-top:14px">
@@ -225,9 +227,9 @@
       </div>
       <div class="result" style="background:linear-gradient(160deg,#26302c,#1f2724);border:1px solid #4a6b5c;margin-top:16px">
         <div class="pb-h" style="margin-top:0">定石（リセット判断）</div>
-        <p class="ref" style="margin:0">・狙いが山下に埋まり、<b>残りの位置が分からない</b> → <b>リセットが正しい</b>（命中ほぼ倍、例 15% → 29%）。<br>・残りが<b>上7枚にあると分かっている</b> → <b>リセットしない</b>（確実な1枚を捨てる損）。<br>・狙いが<b>全部山下</b> → 必ずリセット。<br><b>合言葉：見えてる確実な1枚は混ぜない。見えない埋もれた札は混ぜて掘る。</b></p>
+        <p class="ref" style="margin:0">・残りコピーの位置が<b>分からない／まだ深い</b> → <b>ゲノセクトで混ぜる方が大きく得</b>（埋もれた札を掘り起こし＋鋼2枚で山札も薄くなる）。<br>・残りが<b>上の方だが上7枚かは不確か</b>（例:上12枚） → <b>それでも混ぜる方がやや得</b>。効くのは主に鋼2枚の圧縮。<br>・残りが<b>確実に上7枚にある</b> → <b>混ぜない</b>（確実な命中を捨てる損）。<br>・狙いが<b>全部山下</b> → 必ず混ぜる。</p>
       </div>
-      <p class="muted">埋まった1枚は山下で死に札。残り1枚の位置が分からないなら、1枚だけが上7枚に来る確率は意外と低いので、混ぜて全コピーに山札全体からチャンスを与えた方が当たりやすくなります。</p>
+      <p class="muted">効くのは「シャッフル」より「鋼2枚の圧縮」のことが多い。残りコピーが深い時はシャッフルの掘り起こしも効くが、上の方にある時はシャッフル単体ではほぼ互角で、山札を薄くする効果が主。鋼進化を抜けない（シャッフルだけになる）時は無理に混ぜなくてよい。</p>
     </div>
 
     <div class="card">
@@ -285,7 +287,7 @@
   </div>
 
   <!-- ===================== PURPOSE ===================== -->
-  <div class="pane" id="purpose">
+  <div class="pane active" id="purpose">
     <div class="card">
       <h2>このアプリの目的</h2>
       <p class="ref"><b>「正しい計算」と「なんとなくの感覚」のズレを知る</b>ためのツールです。<br>
@@ -390,8 +392,9 @@ function runPokegear(){
 
 // ---------- TAB 3: メタング使用中に山下へ行った狙いをゲノセクトでリセットするか ----------
 function pgHitCheck(d){return d.slice(0,7).includes('sup');}
-// 状態を構築: 埋まった枚数は山下、残りコピーは livePos に従って山上に配置
-function buildState(N,S,E,G,buried,livePos){
+// 状態を構築: 埋まった枚数は山下、残りコピーは「上から topK 枚以内」に一様配置
+// topK = 山札枚数 のとき＝位置不明（山全体に一様）
+function buildState(N,S,E,G,buried,topK){
   const filler=[];
   for(let i=0;i<E;i++)filler.push('ene');
   for(let i=0;i<G;i++)filler.push('steel');
@@ -401,8 +404,9 @@ function buildState(N,S,E,G,buried,livePos){
   const deck=filler.slice();
   const live=Math.max(0,S-buried);
   for(let i=0;i<live;i++){
-    if(livePos==='top7'){const p=(Math.random()*7)|0;deck.splice(Math.min(p,deck.length),0,'sup');}
-    else{const p=(Math.random()*(deck.length+1))|0;deck.splice(p,0,'sup');}
+    const K=Math.min(Math.max(1,topK), deck.length+1); // 上から K 枚以内
+    const p=(Math.random()*K)|0;
+    deck.splice(p,0,'sup');
   }
   for(let i=0;i<buried;i++)deck.push('sup'); // 山下（埋まった分）
   return deck;
@@ -410,31 +414,35 @@ function buildState(N,S,E,G,buried,livePos){
 function runReset(){
   const N=+v('p_deck'),E=+v('p_ene'),G=+v('p_steel');
   const S=+v('r_sup'); let buried=+v('r_buried'); if(buried>S)buried=S;
-  const pos='uniform'; // 残りコピーは山上のどこか（位置不明）を前提
+  const topK=Math.min(+v('r_topk'), N); // 残りコピーが上から何枚以内か（N＝位置不明）
   const T=120000;
-  let no=0,yes=0;
+  let no=0,yes=0,pure=0;
   for(let t=0;t<T;t++){
-    const d=buildState(N,S,E,G,buried,pos);
+    const d=buildState(N,S,E,G,buried,topK);
     if(pgHitCheck(d))no++;
-    const r=d.slice();ACTIONS.geno(r); // ゲノセクトでリセット（鋼2枚抜く+山札を切る）
+    const r=d.slice();ACTIONS.geno(r);          // ゲノセクトで混ぜる（鋼2枚抜く+シャッフル）
     if(pgHitCheck(r))yes++;
+    const s=d.slice();shuffle(s);               // 参考：シャッフルのみ（圧縮なし）
+    if(pgHitCheck(s))pure++;
   }
-  const pNo=no/T,pYes=yes/T,pct=x=>(x*100).toFixed(1)+'%';
+  const pNo=no/T,pYes=yes/T,pPure=pure/T,pct=x=>(x*100).toFixed(1)+'%';
   document.getElementById('r_box').style.display='block';
-  set('r_no',pct(pNo));
-  set('r_yes',pct(pYes));
+  set('r_no',pct(pNo)); set('r_yes',pct(pYes)); set('r_pure',pct(pPure));
   const diff=pYes-pNo, d1=(diff*100).toFixed(1);
+  const thinGain=pYes-pPure;                     // 混ぜる得のうち「圧縮」由来
   let txt;
   if(buried>=S){
-    txt=`狙いが全部（${S}枚）山下に埋まっている状態。ゲノセクトでリセットすると命中が ${pct(pNo)} → ${pct(pYes)}（${diff>0?'+':''}${d1}pt）。→ 死に札しか無いので、ゲノセクトでリセットして引き直すのが正しい。`;
+    txt=`狙いが全部（${S}枚）山下に埋まっている状態。混ぜると命中が ${pct(pNo)} → ${pct(pYes)}。→ 死に札しか無いので、ゲノセクトで混ぜて引き直すのが正しい。`;
   }else if(diff>0.01){
-    txt=`ゲノセクトでリセットすると命中が ${pct(pNo)} → ${pct(pYes)}（+${d1}pt）。→ 残り1枚の位置が不確かなら、混ぜて山札全体からチャンスを作るリセットが正しい。`;
+    txt=`ゲノセクトで混ぜると命中が ${pct(pNo)} → ${pct(pYes)}（+${d1}pt）→ <b>混ぜる方が得</b>。`;
+    txt+= thinGain>0.02 ? `<br>得の主因は鋼2枚の圧縮（シャッフルのみなら ${pct(pPure)}）。鋼進化を抜けるなら混ぜる価値が高い。`
+                        : `<br>シャッフルの掘り起こしも効いている（残りが深いほど効果大）。`;
   }else if(diff<-0.01){
-    txt=`ゲノセクトでリセットすると命中が ${pct(pNo)} → ${pct(pYes)}（${d1}pt）。→ 残りの確実な1枚を捨てることになるので、混ぜずにそのままポケギアが正しい。`;
+    txt=`ゲノセクトで混ぜると命中が ${pct(pNo)} → ${pct(pYes)}（${d1}pt）→ <b>混ぜない方が得</b>。残りが上7枚に来やすく、混ぜるとその確実さを崩すため。`;
   }else{
-    txt=`命中は ${pct(pNo)} と ${pct(pYes)} でほぼ互角。リセットしてもしなくても大差なし。`;
+    txt=`命中は ${pct(pNo)} と ${pct(pYes)} でほぼ互角。鋼を抜けない（シャッフルだけ）なら無理に混ぜなくてよい。`;
   }
-  set('r_verdict',txt);
+  document.getElementById('r_verdict').innerHTML=txt;
 }
 
 // ---------- TAB 3 (追加): メタングAでボスが山下→残りの最適順 ----------
@@ -454,7 +462,7 @@ function runSeqAfterBury(){
   const res=orders.map(order=>{
     let have=0;
     for(let t=0;t<T;t++){
-      const d=buildState(N,S,E,G,1,'uniform'); // メタングAでボス1枚が山下、残りは山上(位置不明)
+      const d=buildState(N,S,E,G,1,N); // メタングAでボス1枚が山下、残りは山上(位置不明=山全体に一様)
       const st={hasTarget:false,pgHit:false,metangN:1};
       for(const a of order)APPLY[a](d,st);
       if(st.hasTarget)have++;
