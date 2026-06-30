@@ -102,6 +102,7 @@
     <div class="tab active" data-pane="metang">① メタング エネ加速</div>
     <div class="tab" data-pane="pokegear">② ポケギア & プレイ順</div>
     <div class="tab" data-pane="reset">③ リセット判断</div>
+    <div class="tab" data-pane="judge">④ ジャッジマン</div>
     <div class="tab" data-pane="ref">カード効果</div>
   </div>
 
@@ -243,6 +244,42 @@
           <div id="rs_verdict" style="font-size:14px;font-weight:700;margin-top:4px;line-height:1.7"></div>
         </div>
         <p class="muted">「手札に持てる率」＝ポケギアやキチキギスの引きで、最終的に狙いサポートが手札に1枚以上ある確率。メタングB/Cは同じ効果なので入れ替えても結果は同じです。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===================== JUDGE ===================== -->
+  <div class="pane" id="judge">
+    <div class="card">
+      <h2>ジャッジマンの前にメタルメーカーを使うべき？</h2>
+      <p class="desc">手札のエネは手張り1枚/ターンしか使えず、メタングの「メタルメーカー」は山札の上だけを見ます。ジャッジマンで手札を山札に戻すと、抱えたエネをメタングが拾える場所に供給できます。どちらの順がエネを多く加速できるか判定します（相手は考慮しません。ジャッジマンで自分がエネを引き直す損は計算に含みます）。</p>
+
+      <div class="row"><label>山札の残り枚数</label><input type="number" id="jd_deck" value="34" min="1" max="60"></div>
+      <div class="row"><label>山札の基本エネの枚数</label><input type="number" id="jd_dene" value="13" min="0" max="60"></div>
+      <div class="row"><label>手札の枚数</label><input type="number" id="jd_hand" value="5" min="1" max="12"></div>
+      <div class="row"><label>手札の基本エネの枚数</label><input type="number" id="jd_hene" value="2" min="0" max="12"></div>
+      <div class="row"><label>場のメタングの数</label><input type="number" id="jd_metang" value="3" min="1" max="4"></div>
+
+      <div class="result">
+        <table>
+          <thead><tr><th>順番</th><th>メタングで加速できる期待エネ</th></tr></thead>
+          <tbody>
+            <tr><td>メタルメーカー → ジャッジマン</td><td id="jd_a">–</td></tr>
+            <tr><td>ジャッジマン → メタルメーカー</td><td id="jd_b">–</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="result" style="background:linear-gradient(160deg,#2c333d,#23282f);margin-top:12px">
+        <div style="color:var(--sub);font-size:13px">結論</div>
+        <div id="jd_verdict" style="font-size:15px;font-weight:700;margin-top:4px;line-height:1.7">–</div>
+      </div>
+
+      <p class="muted">期待エネ＝メタングが付けられる基本エネの平均枚数（超幾何分布の厳密値）。ジャッジマンで手札のエネが新しい手札に戻ってしまう損は計算に含まれています。手張り1枚/ターンはどちらの順でもほぼ同じなので比較から除いています。</p>
+
+      <div class="result" style="background:linear-gradient(160deg,#26302c,#1f2724);border:1px solid #4a6b5c">
+        <div class="pb-h" style="margin-top:0">定石（ジャッジマンの順番）</div>
+        <p class="ref" style="margin:0">・<b>手札のエネ率 ＞ 山札のエネ率</b> のとき → <b>ジャッジマン → メタルメーカー</b>（手札のエネを山に戻して拾わせる）。<br>・それ未満なら → <b>メタルメーカー → ジャッジマン</b>（薄い手札を混ぜると山札のエネ密度が下がる）。<br>・<b>ざっくり：手札の約4割以上がエネなら、ジャッジマン先。</b></p>
       </div>
     </div>
   </div>
@@ -511,6 +548,31 @@ function runPriority(){
     '・「手札に持つ」だけならキチキギスの引きが常に有利。両方使えるなら基本は両方使うのが最大。';
 }
 
+// ---------- TAB 4: ジャッジマン前にメタルメーカー？（厳密な期待値） ----------
+function calcJudge(){
+  const N=+v('jd_deck'), D=Math.min(+v('jd_dene'),+v('jd_deck')),
+        H=+v('jd_hand'), h=Math.min(+v('jd_hene'),+v('jd_hand')), m=+v('jd_metang');
+  const look=4*m;
+  // メタング先：今の山札の上 look 枚
+  const lookA=Math.min(look,N), denA=N>0?D/N:0, expA=lookA*denA;
+  // ジャッジマン先：手札を山に戻す→4枚引く→残りの上 look 枚
+  const N2=N+H, D2=D+h, denB=N2>0?D2/N2:0;
+  const lookB=Math.min(look,Math.max(0,N2-4)), expB=lookB*denB;
+  set('jd_a', expA.toFixed(2)+' 枚');
+  set('jd_b', expB.toFixed(2)+' 枚');
+  // 損益分岐：手札エネ率 > 山札エネ率 で ジャッジマン先
+  const judgeBetter = denB > denA + 1e-9;
+  const hStar = H*denA;                 // この値を超える手札エネで ジャッジマン先
+  const thresh = Math.floor(hStar)+1;
+  const rec = judgeBetter ? 'ジャッジマン → メタルメーカー の順' : 'メタルメーカー → ジャッジマン の順';
+  let txt = `今の手札（${H}枚中エネ${h}枚）では <b>${rec}</b> が得（期待 ${(judgeBetter?expB:expA).toFixed(2)} 枚 vs ${(judgeBetter?expA:expB).toFixed(2)} 枚）。`;
+  if(thresh<=H)
+    txt += `<br>損益分岐：この山札なら<b>手札エネ ${thresh}枚以上</b>でジャッジマン先が得（手札${H}枚・山札エネ密度 ${(denA*100).toFixed(0)}%）。`;
+  else
+    txt += `<br>この手札枚数では、ジャッジマン先がメタング加速で勝つことはありません（山札の方がエネ密度が高い）。`;
+  document.getElementById('jd_verdict').innerHTML = txt;
+}
+
 // ---------- helpers / wiring ----------
 function v(id){return document.getElementById(id).value;}
 function chk(id){return document.getElementById(id).checked;}
@@ -521,11 +583,13 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
   t.classList.add('active');document.getElementById(t.dataset.pane).classList.add('active');
 });
 ['m_deck','m_ene','m_metang','m_target'].forEach(id=>document.getElementById(id).addEventListener('input',calcMetang));
+['jd_deck','jd_dene','jd_hand','jd_hene','jd_metang'].forEach(id=>document.getElementById(id).addEventListener('input',calcJudge));
 document.getElementById('p_run').onclick=runPokegear;
 document.getElementById('pr_run').onclick=runPriority;
 document.getElementById('r_run').onclick=runReset;
 document.getElementById('rs_run').onclick=runSeqAfterBury;
 calcMetang();
+calcJudge();
 </script>
 </body>
 </html>
