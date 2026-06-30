@@ -47,8 +47,9 @@
   button.run{background:var(--accent);color:#06203f;border:none;border-radius:10px;padding:11px 18px;
     font-size:15px;font-weight:800;cursor:pointer;margin-top:8px}
   button.run:active{transform:translateY(1px)}
-  .ref{font-size:12px;color:var(--sub)}
+  .ref{font-size:13px;color:var(--sub);line-height:1.8}
   .ref b{color:var(--txt)}
+  .pb-h{font-size:15px;font-weight:700;color:var(--accent2);margin:20px 0 4px}
   .muted{color:var(--sub);font-size:12px;margin-top:8px}
   .pane{display:none}
   .pane.active{display:block}
@@ -72,6 +73,7 @@
     <div class="tab active" data-pane="metang">① メタング エネ付与</div>
     <div class="tab" data-pane="pokegear">② ポケギア & プレイ順</div>
     <div class="tab" data-pane="reset">③ リセット判断</div>
+    <div class="tab" data-pane="playbook">定石</div>
     <div class="tab" data-pane="ref">カード効果</div>
   </div>
 
@@ -200,6 +202,47 @@
         <p class="muted">命中＝ポケギアの上7枚で狙い（どれか1枚）を当てる確率。モンテカルロ法（120,000回試行）。</p>
       </div>
       <p class="muted">考え方：埋まった1枚は山下で死に札。残り1枚の位置が<b>分からない</b>なら、1枚だけが上7枚に来る確率は意外と低いので、ゲノセクトで混ぜて2枚に山札全体からチャンスを与えた方が当たりやすくなります。逆に残り1枚が<b>上7枚にあると分かっている</b>なら、混ぜるとその確実な1枚を捨てることになり損です。</p>
+    </div>
+  </div>
+
+  <!-- ===================== PLAYBOOK ===================== -->
+  <div class="pane" id="playbook">
+    <div class="card">
+      <h2>メタングバレット 定石・原則集</h2>
+      <p class="desc">これまでの確率計算から導いた「原則はこれに従え（例外あり）」のまとめ。数字は<b>山札47・基本エネ14・鋼進化5・狙いサポート2〜3枚</b>を想定した目安です。</p>
+
+      <p class="pb-h">0. 基本方針</p>
+      <p class="ref">メタングでエネ加速 → ゲノセクトで鋼進化サーチ → キチキギスで手札補充 → ポケギアでサポート確保。背骨は「<b>山札を薄く保ち、欲しい札に当てやすくする</b>」こと。迷ったら山札を薄くする動きを選ぶ。</p>
+
+      <p class="pb-h">1. エネ加速はメタングを2匹並べる</p>
+      <p class="ref">原則：メタングは<b>2匹</b>並べる。基本エネ約14枚なら、2匹でエネ1枚以上が<b>95.6%</b>、2枚以上も76.6%。1匹だと77.1%止まり。エネ厚め（17枚）が安定の土台。</p>
+
+      <p class="pb-h">2. ポケギアは「薄くしてから最後」</p>
+      <p class="ref">原則：メタング（エネ抜き）とゲノセクト（鋼進化抜き）で山札を削ってからポケギアを撃つ。<b>引き札・サーチが先、ポケギアは最後</b>。これで狙いサポート命中が約 <b>+4pt</b>（例 38.6% → 42.9%）。</p>
+
+      <p class="pb-h">3. ゲノセクト vs キチキギス、どちらを先に使う</p>
+      <p class="ref">・<b>守るべき並びが無い時</b>（メタング未使用 or 狙いが山下に埋まった時）→ <b>ゲノセクト優先</b>。狙いを巻き込まない安全な2枚圧縮で命中が上がる。<br>・<b>メタングで狙いを上に乗せた時</b> → <b>キチキギス優先</b>。ゲノセクトのシャッフルは好位置を崩すので裏目。<br>・「手札に持つ」だけが目的ならキチキギスの引きが常に有利。両方使えるなら両方使うのが最大。</p>
+
+      <p class="pb-h">4. リセット（ゲノセクトのシャッフル）判断</p>
+      <p class="ref">・狙いが山下に埋まり、<b>残りの位置が分からない</b> → <b>リセットが正しい</b>（命中ほぼ倍、例 15% → 29%）。<br>・残りが<b>上7枚にあると分かっている</b> → <b>リセットしない</b>（確実な1枚を捨てる損）。<br>・狙いが<b>全部山下</b> → 必ずリセット。<br>合言葉：「<b>見えてる確実な1枚は混ぜない。見えない埋もれた札は混ぜて掘る。</b>」</p>
+
+      <p class="pb-h">5. プレイ順の黄金律</p>
+      <p class="ref">キチキギス／メタング／ゲノセクト（引き・加速・圧縮）→ <b>最後にポケギア</b>。山札を最大限薄くした状態でポケギアを撃つ。</p>
+
+      <p class="pb-h">⚠ 例外（原則が崩れる時）</p>
+      <p class="ref">・<b>終盤で山札が短い</b>：ポケギアが下まで届くので「埋まり＝死に札」の前提が変わる。<br>・<b>盤面・サイドが切迫</b>：確率より「今勝つ・負けない」動きを優先。<br>・<b>そのサポートを今すぐ手札に欲しい</b>：命中より「保有」を見て、キチキギスで引きにいく。</p>
+
+      <p class="pb-h">クイック早見表（山札47・狙い2〜3枚の目安）</p>
+      <table>
+        <thead><tr><th>場面</th><th>原則の動き</th><th>目安</th></tr></thead>
+        <tbody>
+          <tr><td>エネ加速</td><td>メタング2匹</td><td>エネ1枚以上 95.6%</td></tr>
+          <tr><td>サポート確保</td><td>薄くして最後にポケギア</td><td>命中 約43%（+4pt）</td></tr>
+          <tr><td>狙いが埋まった・位置不明</td><td>ゲノセクトでリセット</td><td>15% → 29%</td></tr>
+          <tr><td>狙いが上7枚に見えている</td><td>混ぜずにポケギア</td><td>ほぼ100%</td></tr>
+        </tbody>
+      </table>
+      <p class="muted">数字は代表局面のモンテカルロ／超幾何による目安。実際の山札枚数で各タブを再計算すると正確です。</p>
     </div>
   </div>
 
