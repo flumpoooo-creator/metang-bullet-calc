@@ -147,6 +147,23 @@
         <p class="muted">「ポケギア命中率」＝ポケギアの7枚で狙いサポートを引ける確率。「手札にある率」＝引き札やポケギアを含め、最終的に1枚以上手札にある確率。<br>モンテカルロ法（<span id="p_trials">40,000</span>回試行）。再計算で多少ぶれます。</p>
       </div>
       <p class="muted">基本の考え方：エネや鋼進化を先に抜いて山札を薄くするほどポケギアは当たりやすい。キチキギスは枚数を減らせる反面、狙いサポートを先に引いてしまう事故もあります。</p>
+
+      <div class="card" style="background:var(--panel2);margin:18px 0 0">
+        <h2 style="font-size:15px">ゲノセクト vs キチキギス：どちらを先に使う？（3ケース判定）</h2>
+        <p class="desc">山札の状態ごとに「ゲノセクト先」と「キチキギス先」を比べます。ゲノセクトは山札を切る（混ぜる）ので、メタングで作った良い並びがある時は裏目になりがちです。②の数値とメタング数を使用。</p>
+        <button class="run" id="pr_run">3ケースで優先判定を計算</button>
+        <div id="pr_box" style="display:none;margin-top:12px">
+          <table>
+            <thead><tr><th>山札の状態</th><th>ゲノセクト先<span class="hint">命中 / 保有</span></th><th>キチキギス先<span class="hint">命中 / 保有</span></th><th>狙い当てに有利</th></tr></thead>
+            <tbody id="pr_tbody"></tbody>
+          </table>
+          <div class="result" style="background:#16243a;margin-top:12px">
+            <div style="color:var(--sub);font-size:13px">まとめ</div>
+            <div id="pr_verdict" style="font-size:14px;font-weight:700;margin-top:4px;line-height:1.7"></div>
+          </div>
+          <p class="muted">「命中」＝ポケギアの上7枚で狙いを当てる確率。「保有」＝引き札やポケギアを含め、最終的に手札に1枚以上ある確率。<br>各ケースとも、その特性のあとにポケギアを使った場合。モンテカルロ法（各60,000回試行）。</p>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -187,7 +204,7 @@
       <h2>組み込んだカード効果（現行レギュ）</h2>
       <p class="ref"><b>メタング「メタルメーカー」</b>：自分の番に1回。山札を上から4枚見て、その中の基本エネルギーを好きなだけ選び、自分のポケモンにつける。残りは裏にして山札の下にもどす。場のメタングの数だけ使える。</p>
       <hr style="border-color:var(--line)">
-      <p class="ref"><b>ゲノセクトex「メタルシグナル」</b>：自分の番に1回。山札から鋼タイプの進化ポケモンを2枚まで選び、相手に見せて手札に加える。</p>
+      <p class="ref"><b>ゲノセクトex「メタルシグナル」</b>：自分の番に1回。山札から鋼タイプの進化ポケモンを2枚まで選び、相手に見せて手札に加える。<b>そして山札を切る（シャッフルする）</b>。</p>
       <hr style="border-color:var(--line)">
       <p class="ref"><b>キチキギスex「さかてにとる」</b>：前の相手の番に自分のポケモンがきぜつしていたなら、自分の番に1回、山札を3枚引く。</p>
       <hr style="border-color:var(--line)">
@@ -338,6 +355,67 @@ function runReset(){
   set('r_verdict',txt);
 }
 
+// ---------- TAB 2 (追加): ゲノセクト vs キチキギス 優先判定 (3ケース) ----------
+function applyMetangN(d,m){ // m回メタング。狙いが山下に埋まったら true
+  let buried=false;
+  for(let r=0;r<m;r++){
+    if(!d.length)break;const look=d.splice(0,4);const rest=[];
+    for(const c of look){if(c!=='ene'){rest.push(c);if(c==='sup')buried=true;}}
+    for(const c of rest)d.push(c);
+  }
+  return buried;
+}
+function lineResult(d,first){ // first: 'geno' | 'kichi' → そのあとポケギア
+  const st={pgHit:false,hasTarget:false,metangN:1};
+  ACTIONS[first](d,st);
+  ACTIONS.pokegear(d,st);
+  return {pg:st.pgHit?1:0,have:st.hasTarget?1:0};
+}
+function runPriority(){
+  const N=+v('p_deck'),S=+v('p_sup'),E=+v('p_ene'),G=+v('p_steel'),metangN=+v('a_metang_n');
+  const T=60000;
+  const spec={deck:N,sup:S,energy:E,steel:G};
+  // 集計箱
+  const acc={random:z(),notburied:z(),buried:z()};
+  function z(){return {n:0,gPg:0,gHave:0,kPg:0,kHave:0};}
+  function add(box,g,k){box.n++;box.gPg+=g.pg;box.gHave+=g.have;box.kPg+=k.pg;box.kHave+=k.have;}
+  // メタング未使用（山札ランダム）
+  for(let t=0;t<T;t++){
+    const d=buildDeck(N,S,E,G);
+    add(acc.random, lineResult(d.slice(),'geno'), lineResult(d.slice(),'kichi'));
+  }
+  // メタング使用 → 埋まった/埋まらないで振り分け
+  for(let t=0;t<T;t++){
+    const base=buildDeck(N,S,E,G);
+    const buried=applyMetangN(base,metangN);
+    const box=buried?acc.buried:acc.notburied;
+    add(box, lineResult(base.slice(),'geno'), lineResult(base.slice(),'kichi'));
+  }
+  // 描画
+  const pct=x=>(x*100).toFixed(1)+'%';
+  const rows=[
+    ['メタング未使用（山札ランダム）',acc.random],
+    ['メタング後・狙いが埋まっていない',acc.notburied],
+    ['メタング後・狙いが埋まった',acc.buried],
+  ];
+  const tb=document.getElementById('pr_tbody');tb.innerHTML='';
+  for(const [label,b] of rows){
+    if(b.n===0){tb.innerHTML+=`<tr><td>${label}</td><td colspan="3" style="color:var(--sub)">該当なし</td></tr>`;continue;}
+    const gPg=b.gPg/b.n,gHave=b.gHave/b.n,kPg=b.kPg/b.n,kHave=b.kHave/b.n;
+    const diff=gPg-kPg;
+    let rec;
+    if(Math.abs(diff)<0.005)rec='<span class="pill ok">ほぼ互角</span>';
+    else if(diff>0)rec='<span class="pill best">ゲノセクト先</span>';
+    else rec='<span class="pill best">キチキギス先</span>';
+    tb.innerHTML+=`<tr><td>${label}</td><td>${pct(gPg)} / ${pct(gHave)}</td><td>${pct(kPg)} / ${pct(kHave)}</td><td>${rec}</td></tr>`;
+  }
+  document.getElementById('pr_box').style.display='block';
+  document.getElementById('pr_verdict').innerHTML =
+    '・山札に守るべき並びが無い時（メタング未使用 や 狙いが埋まった時）は、狙いを巻き込まない<b>ゲノセクトの2枚圧縮を優先</b>すると当てやすい。<br>'+
+    '・メタングで狙いを上に乗せられている時は、シャッフルが裏目になるので<b>キチキギス優先</b>（順番を保ったまま掘れる）。<br>'+
+    '・「手札に持つ」だけならキチキギスの引きが常に有利。両方使えるなら基本は両方使うのが最大。';
+}
+
 // ---------- helpers / wiring ----------
 function v(id){return document.getElementById(id).value;}
 function chk(id){return document.getElementById(id).checked;}
@@ -349,6 +427,7 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
 });
 ['m_deck','m_ene','m_metang','m_target'].forEach(id=>document.getElementById(id).addEventListener('input',calcMetang));
 document.getElementById('p_run').onclick=runPokegear;
+document.getElementById('pr_run').onclick=runPriority;
 document.getElementById('r_run').onclick=runReset;
 calcMetang();
 </script>
