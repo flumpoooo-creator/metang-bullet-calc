@@ -64,13 +64,13 @@
 <header>
   <div class="wrap">
     <h1>⚙️ メタングバレット（メガドリュウズ）確率計算機</h1>
-    <p>メタングのエネ付与確率 / ポケギア3.0のサポート命中率とプレイ順を計算します</p>
+    <p>メタングのエネ加速確率 / ポケギア3.0のサポート命中率とプレイ順を計算します</p>
   </div>
 </header>
 
 <div class="wrap">
   <div class="tabs">
-    <div class="tab active" data-pane="metang">① メタング エネ付与</div>
+    <div class="tab active" data-pane="metang">① メタング エネ加速</div>
     <div class="tab" data-pane="pokegear">② ポケギア & プレイ順</div>
     <div class="tab" data-pane="reset">③ リセット判断</div>
     <div class="tab" data-pane="ref">カード効果</div>
@@ -79,28 +79,28 @@
   <!-- ===================== METANG ===================== -->
   <div class="pane active" id="metang">
     <div class="card">
-      <h2>メタング「メタルメーカー」でエネが付く確率</h2>
-      <p class="desc">山札の上から4枚を見て、その中の基本エネルギーを付ける。場のメタング1匹につき1回（=上から 4×匹数 枚を見るのと同じ）。</p>
+      <h2>メタング「メタルメーカー」でエネ加速できる確率</h2>
+      <p class="desc">山札の上から4枚を見て、その中の基本鋼エネルギーを加速（自分のポケモンにつける）。場のメタング1匹につき1回（=上から 4×匹数 枚を見るのと同じ）。</p>
 
       <div class="row">
-        <label>山札の残り枚数 <span class="hint">手札・場・サイドを除いた今の山札</span></label>
-        <input type="number" id="m_deck" value="47" min="1" max="60">
+        <label>山札の残り枚数 <span class="hint">序盤の現実的な目安は34（後述）</span></label>
+        <input type="number" id="m_deck" value="34" min="1" max="60">
       </div>
       <div class="row">
-        <label>山札にある基本エネルギーの枚数 <span class="hint">基本鋼エネ17枚デッキの代表値</span></label>
-        <input type="number" id="m_ene" value="14" min="0" max="60">
+        <label>山札にある基本エネルギーの枚数 <span class="hint">基本鋼エネ17枚。序盤の残りは約13</span></label>
+        <input type="number" id="m_ene" value="13" min="0" max="60">
       </div>
       <div class="row">
         <label>場のメタングの数（メタルメーカーの回数）</label>
         <input type="number" id="m_metang" value="2" min="1" max="4">
       </div>
       <div class="row">
-        <label>付けたいエネの枚数（この枚数以上付く確率）</label>
+        <label>加速したいエネの枚数（この枚数以上の確率）</label>
         <input type="number" id="m_target" value="1" min="1" max="16">
       </div>
 
       <div class="result">
-        <div style="color:var(--sub);font-size:13px">エネを <b id="m_t_lbl">1</b> 枚以上付けられる確率</div>
+        <div style="color:var(--sub);font-size:13px">エネを <b id="m_t_lbl">1</b> 枚以上加速できる確率</div>
         <div class="big" id="m_p">–</div>
         <div class="bar"><i id="m_bar" style="width:0%"></i></div>
         <div class="muted">期待値（平均で付くエネ枚数）: <b id="m_exp">–</b> 枚 ／ 1枚も付かない確率: <b id="m_p0">–</b></div>
@@ -111,6 +111,10 @@
         <table id="m_dist"><thead><tr><th>付くエネ</th><th>ちょうどの確率</th><th>その枚数以上</th></tr></thead><tbody></tbody></table>
       </details>
       <p class="muted">計算方法：超幾何分布（厳密値）。複数メタングは上から 4×匹数 枚を見るものとして計算しています。</p>
+      <div class="result" style="background:#16243a;margin-top:8px">
+        <div class="pb-h" style="margin-top:0">なぜ初期値が「山札34」？</div>
+        <p class="ref" style="margin:0">60枚スタートから、初手7＋サイド6＋ドロー＋ラムダ・プレシャスキャリー・ポケモン展開・ゲノセクト特性などで<b>序盤に約26枚が山札から抜ける</b>ため、現実的な開始は <b>60−26＝約34枚</b>。47枚スタートは非現実的、という指摘を反映した目安です。実際の枚数が分かればここを書き換えてください。</p>
+      </div>
     </div>
   </div>
 
@@ -121,10 +125,10 @@
       <p class="desc">山札の上から7枚を見てサポートを1枚手札に加える。先に他の特性で山札を削ると当たりやすくなります。何から動くのが得かを比較します。</p>
 
       <div class="grid2">
-        <div class="row"><label>山札の残り枚数</label><input type="number" id="p_deck" value="47" min="1" max="60"></div>
-        <div class="row"><label>狙うサポートの残り枚数<span class="hint">例: ボスの指令 3枚</span></label><input type="number" id="p_sup" value="3" min="0" max="12"></div>
-        <div class="row"><label>山札の基本エネ枚数<span class="hint">メタングが削る対象</span></label><input type="number" id="p_ene" value="14" min="0" max="60"></div>
-        <div class="row"><label>山札の鋼の進化ポケ枚数<span class="hint">ゲノセクトが持ってくる対象</span></label><input type="number" id="p_steel" value="5" min="0" max="20"></div>
+        <div class="row"><label>山札の残り枚数<span class="hint">序盤の現実的な目安は34</span></label><input type="number" id="p_deck" value="34" min="1" max="60"></div>
+        <div class="row"><label>狙うサポートの残り枚数<span class="hint">例: ボスの指令 2枚</span></label><input type="number" id="p_sup" value="2" min="0" max="12"></div>
+        <div class="row"><label>山札の基本エネ枚数<span class="hint">メタングが削る対象</span></label><input type="number" id="p_ene" value="13" min="0" max="60"></div>
+        <div class="row"><label>山札の鋼の進化ポケ枚数<span class="hint">ゲノセクトが持ってくる対象</span></label><input type="number" id="p_steel" value="2" min="0" max="20"></div>
       </div>
 
       <div class="card" style="background:var(--panel2);margin:14px 0 0">
@@ -212,6 +216,16 @@
   <div class="pane" id="ref">
     <div class="card">
       <h2>組み込んだカード効果（現行レギュ）</h2>
+
+      <div class="result" style="background:#16243a;margin-bottom:14px">
+        <div class="pb-h" style="margin-top:0">カードのイラスト（公式ページ）</div>
+        <p class="ref" style="margin:0">著作権の都合でイラスト画像はアプリに転載できないため、公式ページへのリンクを置いています（タップで正規のイラストが見られます）。<br>
+        ▶ <a href="https://www.pokemon-card.com/card-search/details.php/card/45264/regu/all" target="_blank" rel="noopener" style="color:var(--accent)">メタング</a>
+        ▶ <a href="https://www.pokemon-card.com/card-search/details.php/card/47605/regu/all" target="_blank" rel="noopener" style="color:var(--accent)">ゲノセクトex</a>
+        ▶ <a href="https://www.pokemon-card.com/card-search/details.php/card/45913/regu/all" target="_blank" rel="noopener" style="color:var(--accent)">キチキギスex</a>
+        ▶ <a href="https://www.pokemon-card.com/card-search/details.php/card/42743/regu/all" target="_blank" rel="noopener" style="color:var(--accent)">ポケギア3.0</a></p>
+      </div>
+
       <p class="ref"><b>メタング「メタルメーカー」</b>：自分の番に1回。山札を上から4枚見て、その中の基本エネルギーを好きなだけ選び、自分のポケモンにつける。残りは裏にして山札の下にもどす。場のメタングの数だけ使える。</p>
       <hr style="border-color:var(--line)">
       <p class="ref"><b>ゲノセクトex「メタルシグナル」</b>：自分の番に1回。山札から鋼タイプの進化ポケモンを2枚まで選び、相手に見せて手札に加える。<b>そして山札を切る（シャッフルする）</b>。</p>
