@@ -103,7 +103,7 @@
     <div class="tab" data-pane="pokegear">② ポケギア & プレイ順</div>
     <div class="tab" data-pane="reset">③ リセット判断</div>
     <div class="tab" data-pane="judge">④ ジャッジマン</div>
-    <div class="tab" data-pane="ref">カード効果</div>
+    <div class="tab" data-pane="purpose">目的</div>
   </div>
 
   <!-- ===================== METANG ===================== -->
@@ -284,28 +284,19 @@
     </div>
   </div>
 
-  <!-- ===================== REFERENCE ===================== -->
-  <div class="pane" id="ref">
+  <!-- ===================== PURPOSE ===================== -->
+  <div class="pane" id="purpose">
     <div class="card">
-      <h2>組み込んだカード効果（現行レギュ）</h2>
+      <h2>このアプリの目的</h2>
+      <p class="ref"><b>「正しい計算」と「なんとなくの感覚」のズレを知る</b>ためのツールです。<br>
+      メタングのエネ加速、ポケギアのサポート命中、特性を使う順番、リセットやジャッジマンのタイミング――どれも「だいたいこうだろう」で動きがちですが、実際の数字は感覚と意外にズレます。ここでその数字を厳密に確認できます。</p>
 
-      <div class="result" style="background:linear-gradient(160deg,#2c333d,#23282f);margin-bottom:14px">
-        <div class="pb-h" style="margin-top:0">カードのイラスト（公式ページ）</div>
-        <p class="ref" style="margin:0">著作権の都合でイラスト画像はアプリに転載できないため、公式ページへのリンクを置いています（タップで正規のイラストが見られます）。<br>
-        ▶ <a href="https://www.pokemon-card.com/card-search/details.php/card/45264/regu/all" target="_blank" rel="noopener" style="color:var(--accent)">メタング</a>
-        ▶ <a href="https://www.pokemon-card.com/card-search/details.php/card/47605/regu/all" target="_blank" rel="noopener" style="color:var(--accent)">ゲノセクトex</a>
-        ▶ <a href="https://www.pokemon-card.com/card-search/details.php/card/45913/regu/all" target="_blank" rel="noopener" style="color:var(--accent)">キチキギスex</a>
-        ▶ <a href="https://www.pokemon-card.com/card-search/details.php/card/42743/regu/all" target="_blank" rel="noopener" style="color:var(--accent)">ポケギア3.0</a></p>
-      </div>
+      <p class="pb-h">考え方</p>
+      <p class="ref"><b>1%でも期待値の高い選択を積み重ねることが、勝率を上げる。</b><br>
+      1回の対戦では運に埋もれても、期待値で勝る選択を毎ターン選び続ければ、長い目で見て勝ちは増える――という前提で作っています。だから「メタング先かジャッジマン先か」「ゲノセクトで混ぜるか」のような細かい分岐も、感覚ではなく数字で決められるようにしました。</p>
 
-      <p class="ref"><b>メタング「メタルメーカー」</b>：自分の番に1回。山札を上から4枚見て、その中の基本エネルギーを好きなだけ選び、自分のポケモンにつける。残りは裏にして山札の下にもどす。場のメタングの数だけ使える。</p>
-      <hr style="border-color:var(--line)">
-      <p class="ref"><b>ゲノセクトex「メタルシグナル」</b>：自分の番に1回。山札から鋼タイプの進化ポケモンを2枚まで選び、相手に見せて手札に加える。<b>そして山札を切る（シャッフルする）</b>。</p>
-      <hr style="border-color:var(--line)">
-      <p class="ref"><b>キチキギスex「さかてにとる」</b>：前の相手の番に自分のポケモンがきぜつしていたなら、自分の番に1回、山札を3枚引く。</p>
-      <hr style="border-color:var(--line)">
-      <p class="ref"><b>ポケギア3.0（グッズ）</b>：山札を上から7枚見て、その中からサポートを1枚選び、相手に見せて手札に加える。残りは山札にもどして切る。</p>
-      <p class="muted">出典：ポケモンカード公式カード検索 / 各カードデータ。効果テキストは要約です。</p>
+      <p class="pb-h">使い方</p>
+      <p class="ref">①〜④の各タブに今の盤面（山札枚数・エネ・狙うサポートなど）を入れると、その局面での確率・期待値・最適な順番が出ます。まず自分の感覚で予想してから数字を見て、ズレているところを見つけてください。そこが伸びしろです。</p>
     </div>
   </div>
 </div>
