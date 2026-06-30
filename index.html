@@ -170,31 +170,36 @@
   <!-- ===================== RESET DECISION ===================== -->
   <div class="pane" id="reset">
     <div class="card">
-      <h2>メタングで狙いが山下に埋まった → ゲノセクトでリセットすべき？</h2>
-      <p class="desc">メタングは見た4枚のうちエネ以外を山下に送るので、狙いサポートが下に埋まるとポケギア（上7枚）で取れません。ゲノセクトの特性は<b>鋼進化を2枚抜く＋山札を切る（シャッフル）</b>ので、これでリセットして引き直せます。良くも悪くも山札が混ざるので、使うべきかを比較します。<br>※数値は<b>②タブの入力</b>を使います（山札・狙いサポート・基本エネ・鋼進化・メタング数）。</p>
+      <h2>メタング使用中に狙いが山下へ → ゲノセクトでリセットする？</h2>
+      <p class="desc">メタング（2回目など）で欲しいサポートの一部が山下に行き、残りは山上にある状態。ゲノセクトの特性（鋼進化を2枚抜く＋山札を切る＝シャッフル）で混ぜ直すべきかを判定します。山札の残り・基本エネ・鋼進化は<b>②タブの数値</b>を使います。</p>
 
-      <button class="run" id="r_run">②の数値でリセット判断を計算</button>
+      <div class="row"><label>狙うサポートの山札内の総枚数</label><input type="number" id="r_sup" value="2" min="1" max="6"></div>
+      <div class="row"><label>そのうち山下に埋まった枚数 <span class="hint">メタングで山下へ送った枚数</span></label><input type="number" id="r_buried" value="1" min="0" max="6"></div>
+      <div class="row">
+        <label>残り（山上）コピーの位置</label>
+        <select id="r_pos" style="background:#0d1422;border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:7px 9px;font-size:14px">
+          <option value="uniform">位置は不明（山上のどこか）</option>
+          <option value="top7">ポケギアの上7枚内にあると分かっている</option>
+        </select>
+      </div>
+
+      <button class="run" id="r_run">リセット判断を計算</button>
 
       <div class="result" id="r_box" style="display:none">
-        <div style="color:var(--sub);font-size:13px">メタングが狙いサポートを山下に埋めてしまう確率</div>
-        <div class="big small" id="r_buried">–</div>
-
-        <table style="margin-top:14px">
-          <thead><tr><th>状況</th><th>ゲノセクト無し</th><th>ゲノセクトでリセット<span class="hint">(鋼2枚抜く+山札を切る)</span></th></tr></thead>
+        <table>
+          <thead><tr><th>プレイ</th><th>ポケギア命中率</th></tr></thead>
           <tbody>
-            <tr><td><b>埋まった時だけ</b></td><td id="r_b_no">–</td><td id="r_b_yes">–</td></tr>
-            <tr><td>埋まらなかった時</td><td id="r_n_no">–</td><td id="r_n_yes">–</td></tr>
-            <tr><td>全体（平均）</td><td id="r_a_no">–</td><td id="r_a_yes">–</td></tr>
+            <tr><td>そのままポケギア（ゲノセクト無し）</td><td id="r_no">–</td></tr>
+            <tr><td>ゲノセクトでリセット → ポケギア</td><td id="r_yes">–</td></tr>
           </tbody>
         </table>
-
         <div class="result" style="background:#16243a;margin-top:14px">
           <div style="color:var(--sub);font-size:13px">結論</div>
-          <div id="r_verdict" style="font-size:15px;font-weight:700;margin-top:4px">–</div>
+          <div id="r_verdict" style="font-size:15px;font-weight:700;margin-top:4px;line-height:1.7">–</div>
         </div>
-        <p class="muted">モンテカルロ法（60,000回試行）。「埋まった時」は同じ局面で、ゲノセクト（鋼2枚抜く+山札を切る）を使う/使わないだけを比較しています。</p>
+        <p class="muted">命中＝ポケギアの上7枚で狙い（どれか1枚）を当てる確率。モンテカルロ法（120,000回試行）。</p>
       </div>
-      <p class="muted">考え方：メタング1回目で見た4枚は<b>自分が把握できる</b>。狙いが山下に埋まったのを確認できたらゲノセクトでリセットして引き直す価値が高い。埋まっていなければ、ゲノセクトは山札を薄くする利点と狙いを混ぜる欠点の両面（良くも悪くも）になるので、数値で確認しましょう。</p>
+      <p class="muted">考え方：埋まった1枚は山下で死に札。残り1枚の位置が<b>分からない</b>なら、1枚だけが上7枚に来る確率は意外と低いので、ゲノセクトで混ぜて2枚に山札全体からチャンスを与えた方が当たりやすくなります。逆に残り1枚が<b>上7枚にあると分かっている</b>なら、混ぜるとその確実な1枚を捨てることになり損です。</p>
     </div>
   </div>
 
@@ -301,56 +306,51 @@ function runPokegear(){
   });
 }
 
-// ---------- TAB 3: reset decision after Metang buries the target ----------
+// ---------- TAB 3: メタング使用中に山下へ行った狙いをゲノセクトでリセットするか ----------
 function pgHitCheck(d){return d.slice(0,7).includes('sup');}
-function metangBury(d,metangN){ // returns true if a target supporter got buried to bottom
-  let buried=false;
-  for(let r=0;r<metangN;r++){
-    if(!d.length)break;const look=d.splice(0,4);const rest=[];
-    for(const c of look){if(c==='ene'){}else{rest.push(c);if(c==='sup')buried=true;}}
-    for(const c of rest)d.push(c);
+// 状態を構築: 埋まった枚数は山下、残りコピーは livePos に従って山上に配置
+function buildState(N,S,E,G,buried,livePos){
+  const filler=[];
+  for(let i=0;i<E;i++)filler.push('ene');
+  for(let i=0;i<G;i++)filler.push('steel');
+  while(filler.length<N-S)filler.push('other');
+  if(filler.length>N-S)filler.length=N-S; // 念のため
+  shuffle(filler);
+  const deck=filler.slice();
+  const live=Math.max(0,S-buried);
+  for(let i=0;i<live;i++){
+    if(livePos==='top7'){const p=(Math.random()*7)|0;deck.splice(Math.min(p,deck.length),0,'sup');}
+    else{const p=(Math.random()*(deck.length+1))|0;deck.splice(p,0,'sup');}
   }
-  return buried;
+  for(let i=0;i<buried;i++)deck.push('sup'); // 山下（埋まった分）
+  return deck;
 }
 function runReset(){
-  const N=+v('p_deck'),S=+v('p_sup'),E=+v('p_ene'),G=+v('p_steel'),metangN=+v('a_metang_n');
-  const T=60000;
-  let buriedCnt=0;
-  let bNo=0,bYes=0, nNo=0,nYes=0, aNo=0,aYes=0;
+  const N=+v('p_deck'),E=+v('p_ene'),G=+v('p_steel');
+  const S=+v('r_sup'); let buried=+v('r_buried'); if(buried>S)buried=S;
+  const pos=document.getElementById('r_pos').value;
+  const T=120000;
+  let no=0,yes=0;
   for(let t=0;t<T;t++){
-    const d=buildDeck(N,S,E,G);
-    const buried=metangBury(d,metangN);
-    const noReset=pgHitCheck(d)?1:0;        // ゲノセクト無し: 埋まった狙いは山下のまま
-    const reset=d.slice();ACTIONS.geno(reset); // ゲノセクト メタルシグナル: 鋼進化2枚抜く+山札を切る
-    const yesReset=pgHitCheck(reset)?1:0;
-    aNo+=noReset;aYes+=yesReset;
-    if(buried){buriedCnt++;bNo+=noReset;bYes+=yesReset;}
-    else{nNo+=noReset;nYes+=yesReset;}
+    const d=buildState(N,S,E,G,buried,pos);
+    if(pgHitCheck(d))no++;
+    const r=d.slice();ACTIONS.geno(r); // ゲノセクトでリセット（鋼2枚抜く+山札を切る）
+    if(pgHitCheck(r))yes++;
   }
-  const nb=T-buriedCnt;
-  const pct=x=>(x*100).toFixed(1)+'%';
+  const pNo=no/T,pYes=yes/T,pct=x=>(x*100).toFixed(1)+'%';
   document.getElementById('r_box').style.display='block';
-  set('r_buried',pct(buriedCnt/T));
-  set('r_b_no', buriedCnt?pct(bNo/buriedCnt):'—');
-  set('r_b_yes',buriedCnt?pct(bYes/buriedCnt):'—');
-  set('r_n_no', nb?pct(nNo/nb):'—');
-  set('r_n_yes',nb?pct(nYes/nb):'—');
-  set('r_a_no', pct(aNo/T));
-  set('r_a_yes',pct(aYes/T));
-  // verdict
-  const gainBuried=buriedCnt?(bYes-bNo)/buriedCnt:0;     // reset benefit when buried
-  const gainNot=nb?(nYes-nNo)/nb:0;                      // reset benefit when NOT buried
-  let txt='';
-  if(buriedCnt===0){txt='狙いサポートが0枚、または埋まらない設定です。リセット判断の対象局面が発生しません。';}
-  else{
-    const bPlus=(gainBuried*100).toFixed(1), nPlus=(gainNot*100).toFixed(1);
-    txt=`埋まった時はゲノセクトでリセットすると命中率が約 ${bPlus>0?'+':''}${bPlus}pt、埋まっていない時は約 ${nPlus>0?'+':''}${nPlus}pt 変化します。`;
-    if(gainBuried>0.01 && gainNot<=0.005)
-      txt+=' → 結論：メタング1回目で狙いが山下に埋まったのを確認できたらゲノセクトでリセット、埋まっていなければそのままポケギアが最適です。';
-    else if(gainBuried>0.01)
-      txt+=' → 結論：埋まった時はゲノセクトでリセット推奨。埋まっていない時もゲノセクトは山札を薄くするので基本は得です（数値を確認）。';
-    else
-      txt+=' → このデッキ構成ではリセットの効果は小さめ。山札が短く下まで届く場合は差が出にくいです。';
+  set('r_no',pct(pNo));
+  set('r_yes',pct(pYes));
+  const diff=pYes-pNo, d1=(diff*100).toFixed(1);
+  let txt;
+  if(buried>=S){
+    txt=`狙いが全部（${S}枚）山下に埋まっている状態。ゲノセクトでリセットすると命中が ${pct(pNo)} → ${pct(pYes)}（${diff>0?'+':''}${d1}pt）。→ 死に札しか無いので、ゲノセクトでリセットして引き直すのが正しい。`;
+  }else if(diff>0.01){
+    txt=`ゲノセクトでリセットすると命中が ${pct(pNo)} → ${pct(pYes)}（+${d1}pt）。→ 残り1枚の位置が不確かなら、混ぜて山札全体からチャンスを作るリセットが正しい。`;
+  }else if(diff<-0.01){
+    txt=`ゲノセクトでリセットすると命中が ${pct(pNo)} → ${pct(pYes)}（${d1}pt）。→ 残りの確実な1枚を捨てることになるので、混ぜずにそのままポケギアが正しい。`;
+  }else{
+    txt=`命中は ${pct(pNo)} と ${pct(pYes)} でほぼ互角。リセットしてもしなくても大差なし。`;
   }
   set('r_verdict',txt);
 }
