@@ -6,50 +6,79 @@
 <title>メタングバレット 確率計算機</title>
 <style>
   :root{
-    --bg:#0f1420; --panel:#1a2233; --panel2:#222d44; --line:#2e3a55;
-    --txt:#e7ecf5; --sub:#9fb0cc; --accent:#4ea1ff; --accent2:#39d39f;
-    --warn:#ffb454; --bad:#ff6b6b; --good:#39d39f;
+    /* 鋼（メタリック）テーマ */
+    --bg:#14161b; --panel:#262b33; --panel2:#2e343d; --line:#454c59;
+    --txt:#e9edf3; --sub:#9aa6b6; --accent:#8fb6df; --accent2:#c6d2e2;
+    --steel:#aab6c6; --warn:#e6b566; --bad:#e07a7a; --good:#86c9a8;
   }
   *{box-sizing:border-box}
-  body{margin:0;background:var(--bg);color:var(--txt);
+  body{margin:0;color:var(--txt);
     font-family:-apple-system,BlinkMacSystemFont,"Hiragino Kaku Gothic ProN","Yu Gothic",Meiryo,sans-serif;
-    line-height:1.6;padding:0 0 60px}
-  header{background:linear-gradient(135deg,#1b2a4a,#142036);padding:22px 20px;border-bottom:1px solid var(--line)}
-  h1{margin:0;font-size:20px}
-  header p{margin:6px 0 0;color:var(--sub);font-size:13px}
+    line-height:1.6;padding:0 0 60px;
+    background:
+      radial-gradient(1200px 520px at 50% -12%, rgba(150,172,205,.10), transparent 60%),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.012) 0 2px, transparent 2px 4px),
+      linear-gradient(180deg,#171a20,#0e1014);
+    background-attachment:fixed}
+  /* メタルプレート風ヘッダー */
+  header{padding:24px 20px;border-bottom:1px solid #5a6473;
+    background:
+      linear-gradient(180deg, rgba(255,255,255,.06), rgba(0,0,0,.18)),
+      repeating-linear-gradient(90deg, rgba(255,255,255,.022) 0 2px, transparent 2px 5px),
+      linear-gradient(135deg,#3a414c,#262b33);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.18), 0 3px 10px rgba(0,0,0,.45)}
+  h1{margin:0;font-size:20px;letter-spacing:.6px;
+    background:linear-gradient(180deg,#ffffff,#a7b4c5);-webkit-background-clip:text;background-clip:text;color:transparent}
+  header p{margin:6px 0 0;color:#b9c3d2;font-size:13px}
   .wrap{max-width:860px;margin:0 auto;padding:0 16px}
   .tabs{display:flex;gap:8px;margin:18px 0 0;flex-wrap:wrap}
-  .tab{padding:10px 16px;background:var(--panel);border:1px solid var(--line);border-radius:10px 10px 0 0;
-    cursor:pointer;color:var(--sub);font-weight:600;font-size:14px}
-  .tab.active{background:var(--panel2);color:var(--txt);border-bottom-color:var(--panel2)}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;margin:14px 0}
-  .card h2{margin:0 0 4px;font-size:16px}
+  .tab{padding:10px 16px;border:1px solid var(--line);border-radius:10px 10px 0 0;
+    cursor:pointer;color:var(--sub);font-weight:600;font-size:14px;
+    background:linear-gradient(180deg,#2a2f38,#20242b)}
+  .tab.active{color:#fff;border-color:#5a6473;
+    background:linear-gradient(180deg,#3d4551,#2b313a);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.22)}
+  /* 立体的なメタルパネル */
+  .card{border:1px solid var(--line);border-radius:12px;padding:18px;margin:14px 0;
+    background:linear-gradient(160deg,#2b313a,#21262d);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 6px 18px rgba(0,0,0,.38)}
+  .card h2{margin:0 0 4px;font-size:16px;color:#eef2f7;letter-spacing:.3px}
   .card .desc{color:var(--sub);font-size:13px;margin:0 0 14px}
   .row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px dashed var(--line)}
   .row:last-child{border-bottom:none}
   .row label{font-size:14px}
   .row .hint{display:block;color:var(--sub);font-size:11px}
-  input[type=number]{width:84px;background:#0d1422;border:1px solid var(--line);color:var(--txt);
-    border-radius:8px;padding:7px 9px;font-size:15px;text-align:right}
-  input[type=number]:focus{outline:none;border-color:var(--accent)}
-  .result{background:var(--panel2);border-radius:10px;padding:14px 16px;margin-top:14px}
-  .big{font-size:34px;font-weight:800;color:var(--accent2);letter-spacing:.5px}
+  input[type=number],select{background:#191d23;border:1px solid var(--line);color:var(--txt);
+    border-radius:8px;padding:7px 9px;font-size:15px}
+  input[type=number]{width:84px;text-align:right;box-shadow:inset 0 1px 3px rgba(0,0,0,.5)}
+  input[type=number]:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(143,182,223,.25)}
+  .result{border-radius:10px;padding:14px 16px;margin-top:14px;border:1px solid #3a414c;
+    background:linear-gradient(160deg,#30363f,#242a31);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+  /* クロム数字 */
+  .big{font-size:34px;font-weight:800;letter-spacing:.5px;
+    background:linear-gradient(180deg,#ffffff,#9fb6cf);-webkit-background-clip:text;background-clip:text;color:transparent}
   .big.small{font-size:24px}
-  .bar{height:10px;background:#0d1422;border-radius:6px;overflow:hidden;margin:6px 0 2px}
-  .bar > i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  .bar{height:10px;background:#191d23;border-radius:6px;overflow:hidden;margin:6px 0 2px;box-shadow:inset 0 1px 2px rgba(0,0,0,.6)}
+  .bar > i{display:block;height:100%;background:linear-gradient(90deg,#7e93ad,#cdd8e6)}
   table{width:100%;border-collapse:collapse;font-size:13px;margin-top:6px}
   th,td{padding:7px 8px;text-align:right;border-bottom:1px solid var(--line)}
   th:first-child,td:first-child{text-align:left}
   th{color:var(--sub);font-weight:600}
   .pill{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:700}
-  .pill.best{background:rgba(57,211,159,.18);color:var(--good)}
-  .pill.ok{background:rgba(78,161,255,.15);color:var(--accent)}
-  button.run{background:var(--accent);color:#06203f;border:none;border-radius:10px;padding:11px 18px;
-    font-size:15px;font-weight:800;cursor:pointer;margin-top:8px}
-  button.run:active{transform:translateY(1px)}
+  .pill.best{background:rgba(134,201,168,.18);color:var(--good)}
+  .pill.ok{background:rgba(143,182,223,.18);color:var(--accent)}
+  /* クロムボタン */
+  button.run{color:#1b222b;border:1px solid #6b7686;border-radius:10px;padding:11px 18px;
+    font-size:15px;font-weight:800;cursor:pointer;margin-top:8px;
+    background:linear-gradient(180deg,#dfe6ef,#9aa9bc);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.7), 0 2px 6px rgba(0,0,0,.4)}
+  button.run:hover{background:linear-gradient(180deg,#eaf0f7,#a7b6c8)}
+  button.run:active{transform:translateY(1px);box-shadow:inset 0 1px 3px rgba(0,0,0,.4)}
   .ref{font-size:13px;color:var(--sub);line-height:1.8}
   .ref b{color:var(--txt)}
-  .pb-h{font-size:15px;font-weight:700;color:var(--accent2);margin:20px 0 4px}
+  .pb-h{font-size:15px;font-weight:700;margin:20px 0 4px;
+    background:linear-gradient(180deg,#eef2f7,#aebccd);-webkit-background-clip:text;background-clip:text;color:transparent}
   .muted{color:var(--sub);font-size:12px;margin-top:8px}
   .pane{display:none}
   .pane.active{display:block}
@@ -57,7 +86,7 @@
   @media(max-width:560px){.grid2{grid-template-columns:1fr}}
   details{margin-top:10px}
   summary{cursor:pointer;color:var(--accent);font-size:13px}
-  code{background:#0d1422;padding:1px 5px;border-radius:4px;font-size:12px}
+  code{background:#191d23;padding:1px 5px;border-radius:4px;font-size:12px}
 </style>
 </head>
 <body>
@@ -111,7 +140,7 @@
         <table id="m_dist"><thead><tr><th>付くエネ</th><th>ちょうどの確率</th><th>その枚数以上</th></tr></thead><tbody></tbody></table>
       </details>
       <p class="muted">計算方法：超幾何分布（厳密値）。複数メタングは上から 4×匹数 枚を見るものとして計算しています。</p>
-      <div class="result" style="background:#16243a;margin-top:8px">
+      <div class="result" style="background:linear-gradient(160deg,#2c333d,#23282f);margin-top:8px">
         <div class="pb-h" style="margin-top:0">なぜ初期値が「山札34」？</div>
         <p class="ref" style="margin:0">60枚スタートから、初手7＋サイド6＋ドロー＋ラムダ・プレシャスキャリー・ポケモン展開・ゲノセクト特性などで<b>序盤に約26枚が山札から抜ける</b>ため、現実的な開始は <b>60−26＝約34枚</b>。47枚スタートは非現実的、という指摘を反映した目安です。実際の枚数が分かればここを書き換えてください。</p>
       </div>
@@ -162,7 +191,7 @@
             <thead><tr><th>山札の状態</th><th>ゲノセクト先<span class="hint">命中 / 保有</span></th><th>キチキギス先<span class="hint">命中 / 保有</span></th><th>狙い当てに有利</th></tr></thead>
             <tbody id="pr_tbody"></tbody>
           </table>
-          <div class="result" style="background:#16243a;margin-top:12px">
+          <div class="result" style="background:linear-gradient(160deg,#2c333d,#23282f);margin-top:12px">
             <div style="color:var(--sub);font-size:13px">まとめ</div>
             <div id="pr_verdict" style="font-size:14px;font-weight:700;margin-top:4px;line-height:1.7"></div>
           </div>
@@ -182,7 +211,7 @@
       <div class="row"><label>そのうち山下に埋まった枚数 <span class="hint">メタングで山下へ送った枚数</span></label><input type="number" id="r_buried" value="1" min="0" max="6"></div>
       <div class="row">
         <label>残り（山上）コピーの位置</label>
-        <select id="r_pos" style="background:#0d1422;border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:7px 9px;font-size:14px">
+        <select id="r_pos" style="background:#191d23;border:1px solid var(--line);color:var(--txt);border-radius:8px;padding:7px 9px;font-size:14px">
           <option value="uniform">位置は不明（山上のどこか）</option>
           <option value="top7">ポケギアの上7枚内にあると分かっている</option>
         </select>
@@ -198,13 +227,13 @@
             <tr><td>ゲノセクトでリセット → ポケギア</td><td id="r_yes">–</td></tr>
           </tbody>
         </table>
-        <div class="result" style="background:#16243a;margin-top:14px">
+        <div class="result" style="background:linear-gradient(160deg,#2c333d,#23282f);margin-top:14px">
           <div style="color:var(--sub);font-size:13px">結論</div>
           <div id="r_verdict" style="font-size:15px;font-weight:700;margin-top:4px;line-height:1.7">–</div>
         </div>
         <p class="muted">命中＝ポケギアの上7枚で狙い（どれか1枚）を当てる確率。モンテカルロ法（120,000回試行）。</p>
       </div>
-      <div class="result" style="background:#13241b;border:1px solid #2a6b4d;margin-top:16px">
+      <div class="result" style="background:linear-gradient(160deg,#26302c,#1f2724);border:1px solid #4a6b5c;margin-top:16px">
         <div class="pb-h" style="margin-top:0">定石（リセット判断）</div>
         <p class="ref" style="margin:0">・狙いが山下に埋まり、<b>残りの位置が分からない</b> → <b>リセットが正しい</b>（命中ほぼ倍、例 15% → 29%）。<br>・残りが<b>上7枚にあると分かっている</b> → <b>リセットしない</b>（確実な1枚を捨てる損）。<br>・狙いが<b>全部山下</b> → 必ずリセット。<br><b>合言葉：見えてる確実な1枚は混ぜない。見えない埋もれた札は混ぜて掘る。</b></p>
       </div>
@@ -217,7 +246,7 @@
     <div class="card">
       <h2>組み込んだカード効果（現行レギュ）</h2>
 
-      <div class="result" style="background:#16243a;margin-bottom:14px">
+      <div class="result" style="background:linear-gradient(160deg,#2c333d,#23282f);margin-bottom:14px">
         <div class="pb-h" style="margin-top:0">カードのイラスト（公式ページ）</div>
         <p class="ref" style="margin:0">著作権の都合でイラスト画像はアプリに転載できないため、公式ページへのリンクを置いています（タップで正規のイラストが見られます）。<br>
         ▶ <a href="https://www.pokemon-card.com/card-search/details.php/card/45264/regu/all" target="_blank" rel="noopener" style="color:var(--accent)">メタング</a>
