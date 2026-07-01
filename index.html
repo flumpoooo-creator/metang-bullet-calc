@@ -52,6 +52,18 @@
     border-radius:8px;padding:7px 9px;font-size:15px}
   input[type=number]{width:84px;text-align:right;box-shadow:inset 0 1px 3px rgba(0,0,0,.5)}
   input[type=number]:focus,select:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 2px rgba(143,182,223,.25)}
+  /* ネイティブの上下矢印は消して、自前の +/- ボタンを使う */
+  input[type=number]{-webkit-appearance:textfield;-moz-appearance:textfield;appearance:textfield}
+  input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  /* +/- ステッパー */
+  .stepper{display:inline-flex;align-items:stretch;vertical-align:middle}
+  .stepbtn{width:36px;min-height:38px;border:1px solid var(--line);color:var(--txt);
+    font-size:19px;font-weight:800;cursor:pointer;line-height:1;padding:0;
+    background:linear-gradient(180deg,#2f353f,#232830);user-select:none;-webkit-user-select:none}
+  .stepbtn:active{background:linear-gradient(180deg,#3d4551,#2b313a)}
+  .stepbtn.minus{border-radius:8px 0 0 8px;border-right:none}
+  .stepbtn.plus{border-radius:0 8px 8px 0;border-left:none}
+  .stepper input[type=number]{width:52px;text-align:center;border-radius:0;box-shadow:none}
   .result{border-radius:10px;padding:14px 16px;margin-top:14px;border:1px solid #3a414c;
     background:linear-gradient(160deg,#30363f,#242a31);
     box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
@@ -107,6 +119,8 @@
     /* iOSのフォーカス時ズーム防止に font-size:16px */
     input[type=number],select{font-size:16px}
     input[type=number]{width:72px;padding:8px 8px}
+    .stepbtn{width:42px;min-height:42px;font-size:21px}
+    .stepper input[type=number]{width:48px;padding:8px 4px}
     .row{padding:9px 0;gap:8px}
     .row label{font-size:13px;flex:1 1 auto;min-width:0}
     .row .hint{font-size:10.5px}
@@ -560,6 +574,27 @@ function calcJudge(){
   document.getElementById('jd_verdict').innerHTML = txt;
 }
 
+// ---------- 全数値入力に +/- ボタンを付ける ----------
+function makeSteppers(){
+  document.querySelectorAll('input[type=number]').forEach(inp=>{
+    if(inp.dataset.stepped)return; inp.dataset.stepped='1';
+    const wrap=document.createElement('span'); wrap.className='stepper';
+    inp.parentNode.insertBefore(wrap,inp);
+    const mk=(txt,cls,delta)=>{
+      const b=document.createElement('button'); b.type='button'; b.className='stepbtn '+cls; b.textContent=txt;
+      b.addEventListener('click',()=>{
+        const min=inp.min!==''?+inp.min:-Infinity, max=inp.max!==''?+inp.max:Infinity;
+        let val=(parseFloat(inp.value)||0)+delta; val=Math.max(min,Math.min(max,val));
+        inp.value=val; inp.dispatchEvent(new Event('input',{bubbles:true}));
+      });
+      return b;
+    };
+    wrap.appendChild(mk('−','minus',-1));
+    wrap.appendChild(inp);
+    wrap.appendChild(mk('+','plus',1));
+  });
+}
+
 // ---------- helpers / wiring ----------
 function v(id){return document.getElementById(id).value;}
 function chk(id){return document.getElementById(id).checked;}
@@ -574,6 +609,7 @@ document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
 document.getElementById('p_run').onclick=runPokegear;
 document.getElementById('r_run').onclick=runReset;
 document.getElementById('rs_run').onclick=runSeqAfterBury;
+makeSteppers();
 calcMetang();
 calcJudge();
 </script>
